@@ -137,30 +137,6 @@ function QuadricToMatrix(Q);
   return M;
 end function;
 
-
-// *******************************
-// ** COMPUTING THE LIE ALGEBRA **
-// *******************************
-
-// input: n x n matrices A1, ..., At
-// output: The Lie algebra of square matrices X such that
-// X^t*Ai + Ai*X is contained in <A1, ..., At> for all i
-ComputeLieAlgebra := function(A)
-  F := BaseRing(A[1]);
-  n := Nrows(A[1]);
-  Mat := MatrixAlgebra(F,n);
-  MatAss, phi := Algebra(Mat);
-  Mod := Module(MatAss);
-  AMod, Quo := quo<Mod | [Mod!(a @ phi) : a in A]>;
-  M := Matrix([
-        &cat[Eltseq(Quo(Mod!(phi(Transpose(b)*a + a*b)))): a in A]
-    : b in Basis(MatrixAlgebra(F,n))]);
-  B := Basis(Kernel(M));
-  MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
-  MatLie := MatrixLieAlgebra(F,n);
-  return sub<MatLie | MatBasis>;
-end function;
-
 GenToyVeronese := function()
     p := NextPrime(2^20);
     d := 2;
@@ -169,8 +145,5 @@ GenToyVeronese := function()
     SigmaP, M := VeronesePublicData(Fq, d, k);
     I := VeroneseReconstruction(SigmaP, M);
     print "Reconstructed Veronese";
-    A := [QuadricToMatrix(f) : f in I];
-    LieI, natural_rep := ComputeLieAlgebra(A);
-    print "Computed the Lie algebra";
-    return LieI, natural_rep;
+    return I;
 end function;
