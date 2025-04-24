@@ -49,7 +49,7 @@ VeronesePublicData := function(Fq, d, k)
     M cat:= [T*Mip*Tinv];
   end for;
 
-  return SigmaP, M;
+  return SigmaP, M, T;
 end function;
 
 
@@ -142,8 +142,8 @@ GenToyVeronese := function()
     d := 2;
     k := 2;
     Fq:=GF(p);
-    SigmaP, M := VeronesePublicData(Fq, d, k);
+    SigmaP, M, T := VeronesePublicData(Fq, d, k);
     I := VeroneseReconstruction(SigmaP, M);
     print "Reconstructed Veronese";
-    return I;
+    return I, T;
 end function;
