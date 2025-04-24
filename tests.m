@@ -1,5 +1,5 @@
 load "main.m";
-load "test_utils.m";
+
 TestSplitSln := procedure()
     eqs := GenToyVeronese();
     n := 4;
