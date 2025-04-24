@@ -23,7 +23,7 @@ SplitMatrixAlgebra := function(A)
   k := BaseField(A);
   MAlg := MatrixAlgebra(k, n);
   MAss, phi := Algebra(MAlg);
-  I := MinimalLeftIdeals(A : Limit := 1)[1];
-  Mats := [Matrix([a*e: e in Basis(I)]): a in Basis(A)];
+  I := MinimalRightIdeals(A : Limit := 1)[1];
+  Mats := [Matrix([e*a: e in Basis(I)]): a in Basis(A)];
   return hom<A -> MAss | [M @ phi: M in Mats]> * Inverse(phi);
 end function;
