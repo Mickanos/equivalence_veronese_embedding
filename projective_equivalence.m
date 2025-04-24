@@ -36,7 +36,13 @@ ComputeLieAlgebra := function(A)
   B := Basis(Kernel(M));
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   MatLie := MatrixLieAlgebra(F,n);
-  return sub<MatLie | MatBasis>;
+  ALie, psi := sub<MatLie | MatBasis>;
+  L, phi := LieAlgebra(ALie);
+  g, proj := quo < L | Basis(Center(L))>;
+  lifts := [(a - (Trace(a)/n) * One(ALie)) @ phi where a is b @@ (phi * proj) :
+    b in Basis(g)];
+  lift := hom<g -> L | lifts>;
+  return g, lift * Inverse(phi) * Inverse(psi);
 end function;
 
 //Given quadric equations for a projective variety, computes a projective
@@ -44,10 +50,9 @@ end function;
 EquivalenceToVeronese := function(n, d, eqs)
     Quads := [QuadricToMatrix(e) : e in eqs];
     k := BaseRing(Quads[1]);
-    Lie, mat_to_lie := ComputeLieAlgebra(Quads);
-    g, lie_to_g := quo < Lie | Basis(Center(Lie)) >;
+    g, g_to_big_mat := ComputeLieAlgebra(Quads);
     g_to_mat := SplitSln(g);
-    small_mat_to_big_mat := LieAlgebraVeroneseEmbedding(k, n, d);
-    pairs := [<b @@ (mat_to_lie * lie_to_g),
-        b @ (g_to_mat * small_mat_to_big_mat)>: b in Basis(g)];
+    veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
+    pairs := [<b @ g_to_big_mat,
+        b @ (g_to_mat * veronese_rep )>: b in Basis(g)];
 end function;
