@@ -53,6 +53,11 @@ EquivalenceToVeronese := function(n, d, eqs)
     g, g_to_big_mat := ComputeLieAlgebra(Quads);
     g_to_mat := SplitSln(g);
     veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
-    pairs := [<b @ g_to_big_mat,
+    pairs := [<Matrix(b @ g_to_big_mat),
         b @ (g_to_mat * veronese_rep )>: b in Basis(g)];
+    Mat := Parent(pairs[1][1]);
+    system := Matrix([&cat[Eltseq(e*p[1] - p[2]*e): p in pairs] :
+        e in Basis(Mat)]);
+    K := Nullspace(system);
+    return Basis(K), pairs;
 end function;
