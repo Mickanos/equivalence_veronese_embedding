@@ -4,7 +4,7 @@
 LieAlgebraVeroneseEmbedding := function(k, n, d)
     R := PolynomialRing(k, n);
     mons := SetToSequence(MonomialsOfDegree(R, d));
-    op := [[map<R -> R | p :-> R.i * Derivative(p,j)>: j in [1..n]]:
+    op := [[map<R -> R | p :-> R.j * Derivative(p,i)>: j in [1..n]]:
         i in [1..n]];
     Mats := [[Matrix(
         k,
