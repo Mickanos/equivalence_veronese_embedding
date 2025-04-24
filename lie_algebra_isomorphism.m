@@ -110,5 +110,5 @@ end function;
 SplitSln := function(L)
   A, A_Lie, phi, env := EnvelopingAlgebra(L);
   psi := SplitMatrixAlgebra(A);
-  return env * phi * psi;
+  return env * Inverse(phi) * psi;
 end function;
