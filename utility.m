@@ -46,3 +46,27 @@ IsLieHom := function(f, L)
     res := [<a,b> : a, b in L | brack_dom(a,b) @ f ne brack_co(a @ f, b @ f)];
     return IsEmpty(res), res;
 end function;
+
+//p is a polynomial in n variables and M is a square matrix of order n.
+//Computes the polynomial obtained from p by linear transformation of the
+//variables.
+PolySubstitution := function(p, M)
+  R := Parent(p);
+  n := Rank(R);
+  return Evaluate(p, [&+[r[i]*R.i : i in [1..n]]: r in Rows(M)]);
+end function;
+
+//Generates the quadratic equations for the Veronese embedding
+//Not very efficient, could probably be improved.
+VeroneseEquations := function(k, n, d)
+  R := PolynomialRing(k, n);
+  mons := SetToSequence(MonomialsOfDegree(R, d));
+  S := PolynomialRing(k, #mons);
+  mon_index := map< R -> { 1..#mons } | p :-> Index(mons, p)>;
+  return SetToSequence({
+    S.((&*[R.i : i in s[1..d]]) @ mon_index) *
+    S.((&*[R.i : i in s[d+1..2*d]]) @ mon_index) -
+    S.((&*[R.i : i in s[1..d-1]] * R.(s[d+1])) @ mon_index) *
+    S.((&*[R.i : i in s[d+2..2*d]] * R.(s[d])) @ mon_index) :
+  s in Subsequences({1..n},2*d)});
+end function;

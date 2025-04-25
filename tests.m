@@ -37,7 +37,7 @@ TestLieAlgebraVeroneseEmbedding := procedure()
     assert Rank(Im) eq 16;
 end procedure;
 
-TestEquivalenceToVeronese := procedure()
+TestEquivalenceToVeroneseLieIso := procedure()
     eqs := GenToyVeronese();
     n := 4;
     d := 2;
@@ -51,13 +51,25 @@ TestEquivalenceToVeronese := procedure()
     L := ChangeBasis(L, [p[1] @ phi : p in pairs]);
     iso := hom<L -> M | [p[2] @ psi : p in pairs]>;
     assert IsIsomorphism(iso);
-    assert #sol gt 0;
+end procedure;
+
+TestEquivalenceToVeronese := procedure()
+    repeat 
+        eqs := GenToyVeronese();
+        n := 4;
+        d := 2;
+        sol, pairs := EquivalenceToVeronese(n, d, eqs);
+    until #sol eq 1;
+    k := BaseRing(pairs[1][1]);
     T := Matrix(k, 10, 10, Eltseq(sol[1]));
-    iT := T^-1;
-    assert &and[T * p[1] * iT eq p[2] : p in pairs];
+    veqs := VeroneseEquations(k, 4, 2);
+    R := Parent(eqs[1]);
+    vero_ideal := ideal< R | veqs>;
+    assert ideal< R | [PolySubstitution(e, T) : e in eqs]> eq vero_ideal;
 end procedure;
 
 TestSplitSln();
 TestSplitSlnSplitCartan();
 TestLieAlgebraVeroneseEmbedding();
+TestEquivalenceToVeroneseLieIso();
 TestEquivalenceToVeronese();
