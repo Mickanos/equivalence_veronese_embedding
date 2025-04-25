@@ -90,7 +90,6 @@ EnvelopingAlgebra := function(L)
   rho := bc_map * lie_iso * sln_to_gln;
   if K eq BaseRing(L) then
     A, phi := Algebra(Domain(mat_to_gln));
-    print "The Cartan subalgebra was split in the base field.";
     return A, Inverse(phi) * mat_to_gln, rho;
   end if;
   k := BaseField(L);

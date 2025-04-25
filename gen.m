@@ -11,7 +11,6 @@
 VeronesePublicData := function(Fq, d, k)
   R<x0,x1,y0,y1> := PolynomialRing(Fq, 4); // used both on P1 x P1 and on P3
   mons := SetToSequence(MonomialsOfDegree(R, d));
-  print #mons;
   bimons := [x0^i[1]*x1^(d - i[1])*y0^i[2]*y1^(d - i[2]) :
     i in CartesianPower([0..d], 2)];
 
@@ -49,7 +48,7 @@ VeronesePublicData := function(Fq, d, k)
     M cat:= [T*Mip*Tinv];
   end for;
 
-  return SigmaP, M, T;
+  return SigmaP, M;
 end function;
 
 
@@ -68,7 +67,6 @@ VeroneseReconstruction := function(SigmaP, M)
 
   quaddim := d*(d^2-1)*(d^3 + 12*d^2 + 59*d + 66) div 72;
 
-  print "Target dimension is", quaddim;
 
   // build quaddim equations
 
@@ -142,8 +140,7 @@ GenToyVeronese := function()
     d := 2;
     k := 2;
     Fq:=GF(p);
-    SigmaP, M, T := VeronesePublicData(Fq, d, k);
+    SigmaP, M := VeronesePublicData(Fq, d, k);
     I := VeroneseReconstruction(SigmaP, M);
-    print "Reconstructed Veronese";
-    return I, T;
+    return I;
 end function;
