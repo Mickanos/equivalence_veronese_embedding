@@ -9,7 +9,7 @@ TestSplitSln := procedure()
     g := quo < Lie | Basis(Center(Lie))>;
     g_to_mat := SplitSln(g);
     assert IsLieHom(g_to_mat, Basis(g));
-    Im := Matrix([Vector(Eltseq(b @ g_to_mat)): b in Basis(g)]);
+    Im := Matrix([Eltseq(b @ g_to_mat): b in Basis(g)]);
     assert Rank(Im) eq Dimension(g);
 end procedure;
 
@@ -23,7 +23,7 @@ TestSplitSlnSplitCartan := procedure()
     _, gK := BaseChangeAndSplitCartan(g);
     g_to_mat := SplitSln(gK);
     assert IsLieHom(g_to_mat, Basis(gK));
-    Im := Matrix([Vector(Eltseq(b @ g_to_mat)): b in Basis(gK)]);
+    Im := Matrix([Eltseq(b @ g_to_mat): b in Basis(gK)]);
     assert Rank(Im) eq Dimension(gK);
 end procedure;
 
@@ -33,6 +33,8 @@ TestLieAlgebraVeroneseEmbedding := procedure()
     d := 2;
     e := LieAlgebraVeroneseEmbedding(k, n, d);
     assert IsLieHom(e, Basis(Domain(e)));
+    Im := Matrix([Eltseq(b @ e): b in Basis(Domain(e))]);
+    assert Rank(Im) eq 16;
 end procedure;
 
 TestEquivalenceToVeronese := procedure()
