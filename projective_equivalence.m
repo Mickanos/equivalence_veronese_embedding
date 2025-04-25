@@ -30,8 +30,9 @@ ComputeLieAlgebra := function(A)
   MatAss, phi := Algebra(Mat);
   Mod := Module(MatAss);
   AMod, Quo := quo<Mod | [Mod!(a @ phi) : a in A]>;
+  reduce := phi * Coercion(MatAss, Mod) * Quo;
   M := Matrix([
-    &cat[Eltseq(Quo(Mod!(phi(Transpose(b)*a + a*b)))): a in A] cat
+    &cat[Eltseq(reduce(Transpose(b)*a + a*b)): a in A] cat
     [Trace(b)] :
     b in Basis(MatrixAlgebra(F,n))]);
   M := Transpose(M);
