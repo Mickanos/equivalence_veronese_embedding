@@ -71,6 +71,9 @@ VeroneseEquations := function(k, n, d)
   s in Subsequences({1..n},2*d)});
 end function;
 
+//Checks if the projective varieties defined by sequences of equations
+//are projectively equivalent under the projective transformation
+//represented by T.
 CheckProjectiveEquivalence := function(eqs_l, eqs_r, T)
   R := Parent(eqs_l[1]);
   I_l := ideal< R | [PolySubstitution(e, T) : e in eqs_l]>;
