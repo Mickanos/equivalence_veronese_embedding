@@ -70,3 +70,10 @@ VeroneseEquations := function(k, n, d)
     S.((&*[R.i : i in s[d+2..2*d]] * R.(s[d])) @ mon_index) :
   s in Subsequences({1..n},2*d)});
 end function;
+
+CheckProjectiveEquivalence := function(eqs_l, eqs_r, T)
+  R := Parent(eqs_l[1]);
+  I_l := ideal< R | [PolySubstitution(e, T) : e in eqs_l]>;
+  I_r := ideal< R | eqs_r>;
+  return I_l eq I_r;
+end function;

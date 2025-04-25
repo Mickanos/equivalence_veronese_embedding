@@ -61,11 +61,9 @@ TestEquivalenceToVeronese := procedure()
         sol := EquivalenceToVeronese(n, d, eqs);
     until #sol eq 1;
     k := BaseRing(sol[1]);
-    T := Matrix(k, 10, 10, Eltseq(sol[1]));
+    T := sol[1];
     veqs := VeroneseEquations(k, 4, 2);
-    R := Parent(eqs[1]);
-    vero_ideal := ideal< R | veqs>;
-    assert ideal< R | [PolySubstitution(e, T) : e in eqs]> eq vero_ideal;
+    assert CheckProjectiveEquivalence(eqs, veqs, T);
 end procedure;
 
 TestSplitSln();
