@@ -34,7 +34,7 @@ ComputeLieAlgebra := function(A)
     &cat[Eltseq(Quo(Mod!(phi(Transpose(b)*a + a*b)))): a in A] cat
     [Trace(b)] :
     b in Basis(MatrixAlgebra(F,n))]);
-  B := Basis(Kernel(M));
+  B := Basis(Nullspace(M));
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
   L, phi := LieAlgebra(ALie);
@@ -79,22 +79,3 @@ EquivalenceToVeronese := function(n, d, eqs)
     lie_isom := VeroneseLieAlgebraIsom(n, d, eqs);
     return LieAlgebraRepresentationIsomorphism(lie_isom);
 end function;
-
-RoutineTest := procedure(p, d)
-    n := 4;
-    k := 2;
-    print "Time to generate equations:";
-    time eqs := GenVeronese(p, d, k);
-    print "Time to look for a projective equivalence:";
-    time sol := EquivalenceToVeronese(n, d, eqs);
-    if IsEmpty(sol) then
-        print "The isomorphism of Lie algebras did not yield a projective",  
-        " equivalence.";
-    else
-        if CheckEquivalenceToVeronese(eqs, sol[1], n, d) then
-            print "An equivalence was found.";
-        else
-            print "The program did output an incorrect solution.";
-        end if;
-    end if;
-end procedure;
