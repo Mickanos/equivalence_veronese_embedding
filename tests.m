@@ -58,8 +58,7 @@ TestEquivalenceToVeronese := procedure()
     until #sol eq 1;
     k := BaseRing(sol[1]);
     T := sol[1];
-    veqs := VeroneseEquations(k, n, d);
-    assert CheckProjectiveEquivalence(eqs, veqs, T);
+    assert CheckEquivalenceToVeronese(eqs, T, n, d);
 end procedure;
 
 TestSplitSln();

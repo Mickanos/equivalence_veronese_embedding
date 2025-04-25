@@ -80,3 +80,9 @@ CheckProjectiveEquivalence := function(eqs_l, eqs_r, T)
   I_r := ideal< R | eqs_r>;
   return I_l eq I_r;
 end function;
+
+CheckEquivalenceToVeronese := function(eqs, T, n, d)
+  k := BaseRing(T);
+  veqs := VeroneseEquations(k, n, d);
+  return CheckProjectiveEquivalence(eqs, veqs, T);
+end function;
