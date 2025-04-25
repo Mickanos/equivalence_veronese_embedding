@@ -34,6 +34,9 @@ ComputeLieAlgebra := function(A)
     &cat[Eltseq(Quo(Mod!(phi(Transpose(b)*a + a*b)))): a in A] cat
     [Trace(b)] :
     b in Basis(MatrixAlgebra(F,n))]);
+  M := Transpose(M);
+  RemoveZeroRows(~M);
+  M := Transpose(M);
   B := Basis(Nullspace(M));
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
