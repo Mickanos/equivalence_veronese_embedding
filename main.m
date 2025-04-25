@@ -6,4 +6,4 @@ load "projective_equivalence.m";
 eqs := GenToyVeronese();
 n := 4;
 d := 2;
-//sol, pairs := EquivalenceToVeronese(n, d, eqs);
+sol, pairs := EquivalenceToVeronese(n, d, eqs);
