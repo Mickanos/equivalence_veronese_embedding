@@ -37,11 +37,11 @@ TestLieAlgebraVeroneseEmbedding := procedure()
     assert Rank(Im) eq 16;
 end procedure;
 
-TestEquivalenceToVeroneseLieIso := procedure()
+TestVeroneseLieAlgebraIsom := procedure()
     eqs := GenToyVeronese();
     n := 4;
     d := 2;
-    sol, pairs := EquivalenceToVeronese(n, d, eqs);
+    pairs := VeroneseLieAlgebraIsom(n, d, eqs);
     k := BaseRing(pairs[1][1]);
     gl := MatrixLieAlgebra(k, 10);
     A := sub<gl | [p[1] : p in pairs]>;
@@ -58,9 +58,9 @@ TestEquivalenceToVeronese := procedure()
         eqs := GenToyVeronese();
         n := 4;
         d := 2;
-        sol, pairs := EquivalenceToVeronese(n, d, eqs);
+        sol := EquivalenceToVeronese(n, d, eqs);
     until #sol eq 1;
-    k := BaseRing(pairs[1][1]);
+    k := BaseRing(sol[1]);
     T := Matrix(k, 10, 10, Eltseq(sol[1]));
     veqs := VeroneseEquations(k, 4, 2);
     R := Parent(eqs[1]);
@@ -71,5 +71,5 @@ end procedure;
 TestSplitSln();
 TestSplitSlnSplitCartan();
 TestLieAlgebraVeroneseEmbedding();
-TestEquivalenceToVeroneseLieIso();
+TestVeroneseLieAlgebraIsom();
 TestEquivalenceToVeronese();

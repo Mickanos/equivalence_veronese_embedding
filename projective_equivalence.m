@@ -41,20 +41,41 @@ ComputeLieAlgebra := function(A)
   return L, Inverse(phi);
 end function;
 
-//Given quadric equations for a projective variety, computes a projective
-//Equivalence to the Veronese embedding of degree d with n variables.
-EquivalenceToVeronese := function(n, d, eqs)
+//Given quadratic equations for a projective variety, find an isomorphism
+//to the Lie algebra of the Veronese embedding.
+//Outputs a list of pairs of equivalent basis elements of the Lie algebras
+//respectively of the given variety and of the Veronese embedding.
+VeroneseLieAlgebraIsom := function(n, d, eqs)
     Quads := [QuadricToMatrix(e) : e in eqs];
     k := BaseRing(Quads[1]);
     g, natural_rep := ComputeLieAlgebra(Quads);
     g_to_sln := SplitSln(g);
     veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
-    pairs := [<Matrix(b @ natural_rep),
+    return [<Matrix(b @ natural_rep),
         b @ (g_to_sln * veronese_rep )>: b in Basis(g)];
+end function;
+
+//Takes two isomorphic Lie algebras embedded in gl_n.
+//They should be represented as one list of pairs of matrices
+//corresponding to respective basis elements of each Lie algebras
+//that are images of one another by a Lie algebra isomorphism.
+//Outputs an isomorphism of the natural representation. That is,
+//an invertible matrix T in gl_n such that the second Lie algebra is the
+//conjugate of the first by T.
+LieAlgebraRepresentationIsomorphism := function(pairs)
     Mat := Parent(pairs[1][1]);
     system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in pairs] :
         e in Basis(Mat)]);
     K := Nullspace(system);
+    k := BaseRing(pairs[1][1]);
     r := NumberOfRows(pairs[1][1]);
-    return [Matrix(k,r,r,Eltseq(b)) : b in Basis(K)], pairs;
+    return [Matrix(k,r,r,Eltseq(b)) : b in Basis(K)];
+end function;
+
+
+//Given quadric equations for a projective variety, computes a projective
+//Equivalence to the Veronese embedding of degree d with n variables.
+EquivalenceToVeronese := function(n, d, eqs)
+    lie_isom := VeroneseLieAlgebraIsom(n, d, eqs);
+    return LieAlgebraRepresentationIsomorphism(lie_isom);
 end function;
