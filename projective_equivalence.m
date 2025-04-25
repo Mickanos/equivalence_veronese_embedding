@@ -59,5 +59,6 @@ EquivalenceToVeronese := function(n, d, eqs)
     system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in pairs] :
         e in Basis(Mat)]);
     K := Nullspace(system);
-    return Basis(K), pairs;
+    r := NumberOfRows(pairs[1][1]);
+    return [Matrix(k,r,r,Eltseq(b)) : b in Basis(K)], pairs;
 end function;
