@@ -44,18 +44,20 @@ TestVeroneseLieAlgebraIsom := procedure()
     L, phi := LieAlgebra(A);
     B := sub<gl | [p[2] : p in pairs]>;
     M, psi := LieAlgebra(B);
+    C := sub<gl | [p[3] : p in pairs]>;
+    N, ohm := LieAlgebra(B);
     L := ChangeBasis(L, [p[1] @ phi : p in pairs]);
-    iso := hom<L -> M | [p[2] @ psi : p in pairs]>;
-    assert IsIsomorphism(iso);
+    iso1 := hom<L -> M | [p[2] @ psi : p in pairs]>;
+    iso2 := hom<L -> N | [p[3] @ ohm : p in pairs]>;
+    assert IsIsomorphism(iso1);
+    assert IsIsomorphism(iso2);
 end procedure;
 
 TestEquivalenceToVeronese := procedure()
     n := 4;
     d := 2;
-    repeat 
-        eqs := GenVeronese(NextPrime(2^20), d, 2);
-        sol := EquivalenceToVeronese(n, d, eqs);
-    until #sol eq 1;
+    eqs := GenVeronese(NextPrime(2^20), d, 2);
+    sol := EquivalenceToVeronese(n, d, eqs);
     k := BaseRing(sol[1]);
     T := sol[1];
     assert CheckEquivalenceToVeronese(eqs, T, n, d);

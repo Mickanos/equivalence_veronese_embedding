@@ -43,8 +43,10 @@ end function;
 
 //Given quadratic equations for a projective variety, find an isomorphism
 //to the Lie algebra of the Veronese embedding.
-//Outputs a list of pairs of equivalent basis elements of the Lie algebras
+//Outputs a list of triples of equivalent basis elements of the Lie algebras
 //respectively of the given variety and of the Veronese embedding.
+//The third element of the tuple is the same equivalence precomposed
+//by negative transpose in sln.
 VeroneseLieAlgebraIsom := function(n, d, eqs)
     Quads := [QuadricToMatrix(e) : e in eqs];
     k := BaseRing(Quads[1]);
@@ -52,7 +54,8 @@ VeroneseLieAlgebraIsom := function(n, d, eqs)
     g_to_sln := SplitSln(g);
     veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
     return [<Matrix(b @ natural_rep),
-        b @ (g_to_sln * veronese_rep )>: b in Basis(g)];
+        b @ (g_to_sln * veronese_rep ),
+        Transpose(-b @ g_to_sln) @ veronese_rep>: b in Basis(g)];
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.
@@ -62,14 +65,19 @@ end function;
 //Outputs an isomorphism of the natural representation. That is,
 //an invertible matrix T in gl_n such that the second Lie algebra is the
 //conjugate of the first by T.
-LieAlgebraRepresentationIsomorphism := function(pairs)
-    Mat := Parent(pairs[1][1]);
-    system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in pairs] :
+LieAlgebraRepresentationIsomorphism := function(triples)
+    Mat := Parent(triples[1][1]);
+    system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in triples] :
         e in Basis(Mat)]);
-    K := Nullspace(system);
-    k := BaseRing(pairs[1][1]);
-    r := NumberOfRows(pairs[1][1]);
-    return [Matrix(k,r,r,Eltseq(b)) : b in Basis(K)];
+    K := Basis(Nullspace(system));
+    if IsEmpty(K) then
+        system := Matrix([&cat[Eltseq(p[1]*e - e*p[3]): p in triples] :
+            e in Basis(Mat)]);
+        K := Basis(Nullspace(system));
+    end if;
+    k := BaseRing(triples[1][1]);
+    r := NumberOfRows(triples[1][1]);
+    return [Matrix(k,r,r,Eltseq(b)) : b in K];
 end function;
 
 
