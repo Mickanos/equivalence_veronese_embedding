@@ -9,7 +9,7 @@ d := 2;
 for _ in [1..50] do
     //Generates quadratic equations for a variety projectively equivalent to
     //the veronese 3-fold of degree 2.
-    eqs := GenToyVeronese(p, d, k);
+    eqs := GenVeronese(p, d, k);
     //Tries to compute a projective equivalence
     sol := EquivalenceToVeronese(n, d, eqs);
     if IsEmpty(sol) then
