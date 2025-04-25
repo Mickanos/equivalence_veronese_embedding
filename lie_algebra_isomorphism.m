@@ -23,7 +23,7 @@ CartanDimFromRootNumber := function(n)
 end function;
 
 // See Section 5.11 of De Graaf - Lie Algebras, Theory and Algorithms
-// Relies on Magma's convention on ordering roots. 
+// Relies on Magma's convention on the ordering of roots. 
 // Might break upon future updates, although very unlikely.
 CanonicalGenerators := function(root_vecs)
   s := CartanDimFromRootNumber(#root_vecs);
