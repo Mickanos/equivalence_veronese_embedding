@@ -135,10 +135,7 @@ function QuadricToMatrix(Q);
   return M;
 end function;
 
-GenToyVeronese := function()
-    p := NextPrime(2^20);
-    d := 2;
-    k := 2;
+GenVeronese := function(p, d, k)
     Fq:=GF(p);
     SigmaP, M := VeronesePublicData(Fq, d, k);
     I := VeroneseReconstruction(SigmaP, M);
