@@ -31,18 +31,14 @@ ComputeLieAlgebra := function(A)
   Mod := Module(MatAss);
   AMod, Quo := quo<Mod | [Mod!(a @ phi) : a in A]>;
   M := Matrix([
-        &cat[Eltseq(Quo(Mod!(phi(Transpose(b)*a + a*b)))): a in A]
-    : b in Basis(MatrixAlgebra(F,n))]);
+    &cat[Eltseq(Quo(Mod!(phi(Transpose(b)*a + a*b)))): a in A] cat
+    [Trace(b)] :
+    b in Basis(MatrixAlgebra(F,n))]);
   B := Basis(Kernel(M));
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
-  MatLie := MatrixLieAlgebra(F,n);
-  ALie, psi := sub<MatLie | MatBasis>;
+  ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
   L, phi := LieAlgebra(ALie);
-  g, proj := quo < L | Basis(Center(L))>;
-  lifts := [(a - (Trace(a)/n) * One(ALie)) @ phi where a is b @@ (phi * proj) :
-    b in Basis(g)];
-  lift := hom<g -> L | lifts>;
-  return g, lift * Inverse(phi) * Inverse(psi);
+  return L, Inverse(phi);
 end function;
 
 //Given quadric equations for a projective variety, computes a projective
