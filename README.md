@@ -1,2 +1,3 @@
-Launch magma from the the directory containing the repository.
-Load either `tests.m` to lauch the tests, `example.m` to see an example of a computation or `main.m` to simply load all functions in Magma.
+Launch magma from the the directory containing the repository.  
+"tests.m" can be loaded to run the automatic tests.  
+Otherwise, simply load "main.m". The Procedure `RoutineTest` shows the main functions.
