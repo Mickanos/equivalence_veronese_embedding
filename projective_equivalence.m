@@ -23,16 +23,13 @@ end function;
 // input: n x n matrices A1, ..., At
 // output: The Lie algebra of square matrices X such that
 // X^t*Ai + Ai*X is contained in <A1, ..., At> for all i
+
 ComputeLieAlgebra := function(A)
   F := BaseRing(A[1]);
   n := Nrows(A[1]);
-  Mat := MatrixAlgebra(F,n);
-  MatAss, phi := Algebra(Mat);
-  Mod := Module(MatAss);
-  AMod, Quo := quo<Mod | [Mod!(a @ phi) : a in A]>;
-  reduce := phi * Coercion(MatAss, Mod) * Quo;
+  AMod, Quo := quo<KMatrixSpace(F, n, n) | A>;
   M := Matrix([
-    &cat[Eltseq(reduce(Transpose(b)*a + a*b)): a in A] cat
+    &cat[Eltseq(Quo(Transpose(b)*a + a*b)): a in A] cat
     [Trace(b)] :
     b in Basis(MatrixAlgebra(F,n))]);
   M := Transpose(M);
