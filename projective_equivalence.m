@@ -28,10 +28,10 @@ ComputeLieAlgebra := function(A)
   F := BaseRing(A[1]);
   n := Nrows(A[1]);
   AMod, Quo := quo<KMatrixSpace(F, n, n) | A>;
-  M := Matrix([
-    &cat[Eltseq(Quo(Transpose(b)*a + a*b)): a in A] cat
-    [Trace(b)] :
-    b in Basis(MatrixAlgebra(F,n))]);
+  M := HorizontalJoin(
+    HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
+    b in Basis(MatrixAlgebra(F,n))]): a in A]),
+    Matrix(F, n^2, 1, [Trace(b) : b in Basis(MatrixAlgebra(F,n))]));
   M := Transpose(M);
   RemoveZeroRows(~M);
   M := Transpose(M);
@@ -41,6 +41,7 @@ ComputeLieAlgebra := function(A)
   L, phi := LieAlgebra(ALie);
   return L, Inverse(phi);
 end function;
+
 
 //Given quadratic equations for a projective variety, find an isomorphism
 //to the Lie algebra of the Veronese embedding.

@@ -21,18 +21,3 @@ RoutineTest := procedure(p, d)
         end if;
     end if;
 end procedure;
-
-ComputeLieAlgebraTiming := function(p, d, reps)
-    n := 4;
-    k := 2;
-    S := 0;
-    for _ in [1..reps] do
-        eqs := GenVeronese(p, d, k);
-        A := [QuadricToMatrix(e) : e in eqs];
-        T := Cputime();
-        g := ComputeLieAlgebra(A);
-        T := Cputime(T);
-        S +:=T;
-    end for;
-    return S/reps;
-end function;
