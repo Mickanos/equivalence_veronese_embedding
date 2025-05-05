@@ -86,3 +86,13 @@ CheckEquivalenceToVeronese := function(eqs, T, n, d)
   veqs := VeroneseEquations(k, n, d);
   return CheckProjectiveEquivalence(eqs, veqs, T);
 end function;
+
+RandomElements := function(L, n)
+  s := #L-1;
+  res := {};
+  repeat
+    Include(~res, Random(s) + 1);
+  until #res eq n;
+  return [L[i] : i in res];
+end function;
+    
