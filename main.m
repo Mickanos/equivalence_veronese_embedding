@@ -3,11 +3,9 @@ load "gen.m";
 load "lie_algebra_isomorphism.m";
 load "projective_equivalence.m";
 
-RoutineTest := procedure(p, d)
-    n := 4;
-    k := 2;
+RoutineTest := procedure(p, n, d)
     print "Time to generate equations:";
-    time eqs := GenVeronese(p, d, k);
+    time eqs := GenTwistedVeronese(p, n, d);
     print "Time to look for a projective equivalence:";
     time sol := EquivalenceToVeronese(n, d, eqs);
     if IsEmpty(sol) then

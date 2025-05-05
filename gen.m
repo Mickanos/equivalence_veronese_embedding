@@ -104,6 +104,15 @@ VeroneseReconstruction := function(SigmaP, M)
   return I;
 end function;
 
+GenTwistedVeronese := function(p, n, d)
+  k := GF(p);
+  vero_eqs := VeroneseEquations(k, n, d);
+  r := Rank(Parent(vero_eqs[1]));
+  repeat
+    T := RandomMatrix(k, r, r);
+  until IsUnit(T);
+  return [PolySubstitution(e, T) : e in vero_eqs];
+end function;
 
 
 // **********************************************************
