@@ -106,8 +106,9 @@ end function;
 
 GenTwistedVeronese := function(p, n, d)
   k := GF(p);
-  vero_eqs := VeroneseEquations(k, n, d);
-  r := Rank(Parent(vero_eqs[1]));
+  r := NumberOfMonomials(n, d);
+  vero_eqs := GetVeroneseEquations(n, d);
+  ChangeUniverse(~vero_eqs, PolynomialRing(k, r));
   repeat
     T := RandomMatrix(k, r, r);
   until IsUnit(T);

@@ -56,19 +56,56 @@ PolySubstitution := function(p, M)
   return Evaluate(p, [&+[r[i]*R.i : i in [1..n]]: r in Rows(M)]);
 end function;
 
+NumberOfMonomials := function(n, d)
+  return Binomial(n+d-1, d);
+end function;
+
+//Takes a list of homogeneous polynomials of equal degrees.
+//Returns a basis of the space of polynomials spanned by elements of the list.
+FreeHomogeneousPolys := function(L)
+  i := 1;
+  repeat
+    d := Degree(L[i]);
+    i +:= 1;
+  until d ne -1;
+  R := Parent(L[1]);
+  mons := SetToSequence(MonomialsOfDegree(R, d));
+  vectors := [Vector([MonomialCoefficient(P, m) : m in mons]): P in L];
+  space := sub<Parent(vectors[1]) | vectors>;
+  return [&+[v[i]*m : i->m in mons]: v in Basis(space)];
+end function;
+
 //Generates the quadratic equations for the Veronese embedding
 //Not very efficient, could probably be improved.
-VeroneseEquations := function(k, n, d)
-  R := PolynomialRing(k, n);
+VeroneseEquations := function(n, d)
+  Z := IntegerRing();
+  R := PolynomialRing(Z, n);
   mons := SetToSequence(MonomialsOfDegree(R, d));
-  S := PolynomialRing(k, #mons);
+  S := PolynomialRing(Z, #mons);
   mon_index := map< R -> { 1..#mons } | p :-> Index(mons, p)>;
-  return SetToSequence({
+  eqs := SetToSequence({
     S.((&*[R.i : i in s[1..d]]) @ mon_index) *
     S.((&*[R.i : i in s[d+1..2*d]]) @ mon_index) -
     S.((&*[R.i : i in s[1..d-1]] * R.(s[d+1])) @ mon_index) *
     S.((&*[R.i : i in s[d+2..2*d]] * R.(s[d])) @ mon_index) :
   s in Subsequences({1..n},2*d)});
+  return FreeHomogeneousPolys(eqs);
+end function;
+
+//Generating the equations of Veronese embeddings is expensive with my
+//implementation. This saves the equations to a magma file.
+//The dollar signs need to be replaced with the letter "R".
+PrecomputeVeroneseEquation := procedure(F, n, d)
+  eqs := VeroneseEquations(n, d);
+  s := Sprintf("veronese_%o_%o := function()\n", n, d) cat
+      "\tR := PolynomialRing(IntegerRing(), NumberOfMonomials(" cat 
+      Sprintf("%o, %o));\n \treturn %m;\n", n, d, eqs) cat
+      "end function;\n";
+  PrintFile(F, s);
+end procedure;
+
+GetVeroneseEquations := function(n, d)
+  return eval Sprintf("return veronese_%o_%o();", n, d);
 end function;
 
 //Checks if the projective varieties defined by sequences of equations
@@ -83,7 +120,9 @@ end function;
 
 CheckEquivalenceToVeronese := function(eqs, T, n, d)
   k := BaseRing(T);
-  veqs := VeroneseEquations(k, n, d);
+  r := NumberOfMonomials(n, d);
+  veqs := GetVeroneseEquations(n, d);
+  ChangeUniverse(~veqs, PolynomialRing(k, r));
   return CheckProjectiveEquivalence(eqs, veqs, T);
 end function;
 
@@ -95,4 +134,3 @@ RandomElements := function(L, n)
   until #res eq n;
   return [L[i] : i in res];
 end function;
-    
