@@ -104,6 +104,12 @@ VeroneseReconstruction := function(SigmaP, M)
   return I;
 end function;
 
+GetEquationThreefold := function(p, d)
+  k := GF(p);
+  SigmaP, M := VeronesePublicData(k, d, 2);
+  return VeroneseReconstruction(SigmaP, M);
+end function;
+
 GenTwistedVeronese := function(p, n, d)
   k := GF(p);
   r := NumberOfMonomials(n, d);
