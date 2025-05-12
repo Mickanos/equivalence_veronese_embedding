@@ -3113,3 +3113,137 @@ R.54*R.56 - R.55^2
 ];
 end function;
 
+veronese_5_2 := function()
+        R := PolynomialRing(IntegerRing(), NumberOfMonomials(5, 2));
+        return [ PolynomialRing(IntegerRing(), 15) |
+R.1*R.6 - R.2^2,
+R.1*R.7 - R.2*R.3,
+R.1*R.8 - R.2*R.4,
+R.1*R.9 - R.2*R.5,
+R.1*R.10 - R.3^2,
+R.1*R.11 - R.3*R.4,
+R.1*R.12 - R.3*R.5,
+R.1*R.13 - R.4^2,
+R.1*R.14 - R.4*R.5,
+R.1*R.15 - R.5^2,
+R.2*R.7 - R.3*R.6,
+R.2*R.8 - R.4*R.6,
+R.2*R.9 - R.5*R.6,
+R.2*R.10 - R.3*R.7,
+R.2*R.11 - R.4*R.7,
+R.2*R.12 - R.5*R.7,
+R.2*R.13 - R.4*R.8,
+R.2*R.14 - R.5*R.8,
+R.2*R.15 - R.5*R.9,
+R.3*R.8 - R.4*R.7,
+R.3*R.9 - R.5*R.7,
+R.3*R.11 - R.4*R.10,
+R.3*R.12 - R.5*R.10,
+R.3*R.13 - R.4*R.11,
+R.3*R.14 - R.5*R.11,
+R.3*R.15 - R.5*R.12,
+R.4*R.9 - R.5*R.8,
+R.4*R.12 - R.5*R.11,
+R.4*R.14 - R.5*R.13,
+R.4*R.15 - R.5*R.14,
+R.6*R.10 - R.7^2,
+R.6*R.11 - R.7*R.8,
+R.6*R.12 - R.7*R.9,
+R.6*R.13 - R.8^2,
+R.6*R.14 - R.8*R.9,
+R.6*R.15 - R.9^2,
+R.7*R.11 - R.8*R.10,
+R.7*R.12 - R.9*R.10,
+R.7*R.13 - R.8*R.11,
+R.7*R.14 - R.9*R.11,
+R.7*R.15 - R.9*R.12,
+R.8*R.12 - R.9*R.11,
+R.8*R.14 - R.9*R.13,
+R.8*R.15 - R.9*R.14,
+R.10*R.13 - R.11^2,
+R.10*R.14 - R.11*R.12,
+R.10*R.15 - R.12^2,
+R.11*R.14 - R.12*R.13,
+R.11*R.15 - R.12*R.14,
+R.13*R.15 - R.14^2
+];
+end function;
+
+veronese_2_2 := function()
+        R := PolynomialRing(IntegerRing(), NumberOfMonomials(2, 2));
+        return [ PolynomialRing(IntegerRing(), 3) |
+R.1*R.3 - R.2^2
+];
+end function;
+
+veronese_2_3 := function()
+        R := PolynomialRing(IntegerRing(), NumberOfMonomials(2, 3));
+        return [ PolynomialRing(IntegerRing(), 4) |
+R.1*R.3 - R.2^2,
+R.1*R.4 - R.2*R.3,
+R.2*R.4 - R.3^2
+];
+end function;
+
+veronese_2_4 := function()
+        R := PolynomialRing(IntegerRing(), NumberOfMonomials(2, 4));
+        return [ PolynomialRing(IntegerRing(), 5) |
+R.1*R.3 - R.2^2,
+R.1*R.4 - R.2*R.3,
+R.1*R.5 - R.3^2,
+R.2*R.4 - R.3^2,
+R.2*R.5 - R.3*R.4,
+R.3*R.5 - R.4^2
+];
+end function;
+
+veronese_2_5 := function()
+        R := PolynomialRing(IntegerRing(), NumberOfMonomials(2, 5));
+        return [ PolynomialRing(IntegerRing(), 6) |
+R.1*R.3 - R.2^2,
+R.1*R.4 - R.2*R.3,
+R.1*R.5 - R.3^2,
+R.1*R.6 - R.3*R.4,
+R.2*R.4 - R.3^2,
+R.2*R.5 - R.3*R.4,
+R.2*R.6 - R.4^2,
+R.3*R.5 - R.4^2,
+R.3*R.6 - R.4*R.5,
+R.4*R.6 - R.5^2
+];
+end function;
+
+veronese_2_8 := function()
+        R := PolynomialRing(IntegerRing(), NumberOfMonomials(2, 8));
+        return [ PolynomialRing(IntegerRing(), 9) |
+R.1*R.3 - R.2^2,
+R.1*R.4 - R.2*R.3,
+R.1*R.5 - R.3^2,
+R.1*R.6 - R.3*R.4,
+R.1*R.7 - R.4^2,
+R.1*R.8 - R.4*R.5,
+R.1*R.9 - R.5^2,
+R.2*R.4 - R.3^2,
+R.2*R.5 - R.3*R.4,
+R.2*R.6 - R.4^2,
+R.2*R.7 - R.4*R.5,
+R.2*R.8 - R.5^2,
+R.2*R.9 - R.5*R.6,
+R.3*R.5 - R.4^2,
+R.3*R.6 - R.4*R.5,
+R.3*R.7 - R.5^2,
+R.3*R.8 - R.5*R.6,
+R.3*R.9 - R.6^2,
+R.4*R.6 - R.5^2,
+R.4*R.7 - R.5*R.6,
+R.4*R.8 - R.6^2,
+R.4*R.9 - R.6*R.7,
+R.5*R.7 - R.6^2,
+R.5*R.8 - R.6*R.7,
+R.5*R.9 - R.7^2,
+R.6*R.8 - R.7^2,
+R.6*R.9 - R.7*R.8,
+R.7*R.9 - R.8^2
+];
+end function;
+
