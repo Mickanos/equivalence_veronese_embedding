@@ -24,18 +24,29 @@ end function;
 // output: The Lie algebra of square matrices X such that
 // X^t*Ai + Ai*X is contained in <A1, ..., At> for all i
 
-ComputeLieAlgebra := function(A)
-  F := BaseRing(A[1]);
-  n := Nrows(A[1]);
-  AMod, Quo := quo<KMatrixSpace(F, n, n) | A>;
-  M := HorizontalJoin(
-    HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
-    b in Basis(MatrixAlgebra(F,n))]): a in A]),
-    Matrix(F, n^2, 1, [Trace(b) : b in Basis(MatrixAlgebra(F,n))]));
-  M := Transpose(M);
-  RemoveZeroRows(~M);
-  M := Transpose(M);
-  B := Basis(Nullspace(M));
+ComputeLieAlgebra := function(eqs, r : f := 1)
+  F := BaseRing(eqs[1]);
+  n := Nrows(eqs[1]);
+  AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;
+  n_eqs := Ceiling(f * #eqs);
+  count := 0;
+  repeat
+    A := RandomElements(eqs, n_eqs);
+    M := HorizontalJoin(
+        HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
+        b in Basis(MatrixAlgebra(F,n))]): a in A]),
+        Matrix(F, n^2, 1, [Trace(b) : b in Basis(MatrixAlgebra(F,n))]));
+    M := Transpose(M);
+    RemoveZeroRows(~M);
+    M := Transpose(M);
+    B := Basis(Nullspace(M));
+    count +:=1;
+    if IsDivisibleBy(count, 5) then
+        printf "Warning: already %o tries and the Lie algebra could not", count;
+        print " be computed.";
+    end if;
+  until #B eq r^2 - 1;
+  printf "Lie algebra computed in %o tries.\n", count;
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
   L, phi := LieAlgebra(ALie);
@@ -49,10 +60,10 @@ end function;
 //respectively of the given variety and of the Veronese embedding.
 //The third element of the tuple is the same equivalence precomposed
 //by negative transpose in sln.
-VeroneseLieAlgebraIsom := function(n, d, eqs)
+VeroneseLieAlgebraIsom := function(n, d, eqs : f := 1)
     Quads := [QuadricToMatrix(e) : e in eqs];
     k := BaseRing(Quads[1]);
-    g, natural_rep := ComputeLieAlgebra(Quads);
+    g, natural_rep := ComputeLieAlgebra(Quads, n: f := f);
     g_to_sln := SplitSln(g);
     veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
     return [<Matrix(b @ natural_rep),
@@ -85,7 +96,7 @@ end function;
 
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
-EquivalenceToVeronese := function(n, d, eqs)
-    lie_isom := VeroneseLieAlgebraIsom(n, d, eqs);
+EquivalenceToVeronese := function(n, d, eqs : f := 1)
+    lie_isom := VeroneseLieAlgebraIsom(n, d, eqs : f := f);
     return LieAlgebraRepresentationIsomorphism(lie_isom);
 end function;
