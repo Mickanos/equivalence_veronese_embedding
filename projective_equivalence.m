@@ -24,7 +24,7 @@ end function;
 // output: The Lie algebra of square matrices X such that
 // X^t*Ai + Ai*X is contained in <A1, ..., At> for all i
 
-ComputeLieAlgebra := function(eqs, r : f := 1)
+ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
   F := BaseRing(eqs[1]);
   n := Nrows(eqs[1]);
   AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;
@@ -48,6 +48,10 @@ ComputeLieAlgebra := function(eqs, r : f := 1)
   until #B eq r^2 - 1;
   printf "Lie algebra computed in %o tries.\n", count;
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
+  if verbose then
+    print "We found a basis for the Lie algebra of the variety. Is is:";
+    print MatBasis;
+  end if;
   ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
   L, phi := LieAlgebra(ALie);
   return L, Inverse(phi);
@@ -60,12 +64,27 @@ end function;
 //respectively of the given variety and of the Veronese embedding.
 //The third element of the tuple is the same equivalence precomposed
 //by negative transpose in sln.
-VeroneseLieAlgebraIsom := function(n, d, eqs : f := 1)
+VeroneseLieAlgebraIsom := function(n, d, eqs : f := 1, verbose := false)
     Quads := [QuadricToMatrix(e) : e in eqs];
     k := BaseRing(Quads[1]);
-    g, natural_rep := ComputeLieAlgebra(Quads, n: f := f);
+    g, natural_rep := ComputeLieAlgebra(Quads, n: f := f, verbose := verbose);
     g_to_sln := SplitSln(g);
+    if verbose then
+        print "We have computed a splitting of the Lie algebra.";
+        for b in Basis(g) do
+            printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
+            print (b @ g_to_sln);
+        end for;
+    end if;
     veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
+    if verbose then
+        print "Now, composing the previous map with the Veronese embedding, ";
+        print "we get the following correspondences:";
+        for b in Basis(g) do
+            printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
+            print (b @ (g_to_sln * veronese_rep));
+        end for;
+    end if;
     return [<Matrix(b @ natural_rep),
         b @ (g_to_sln * veronese_rep ),
         Transpose(-b @ g_to_sln) @ veronese_rep>: b in Basis(g)];
@@ -78,25 +97,41 @@ end function;
 //Outputs an isomorphism of the natural representation. That is,
 //an invertible matrix T in gl_n such that the second Lie algebra is the
 //conjugate of the first by T.
-LieAlgebraRepresentationIsomorphism := function(triples)
+LieAlgebraRepresentationIsomorphism := function(triples: verbose := false)
     Mat := Parent(triples[1][1]);
     system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in triples] :
         e in Basis(Mat)]);
     K := Basis(Nullspace(system));
+    if verbose then
+        print "We compute an isomorphism of representations.";
+    end if;
     if IsEmpty(K) then
+        if verbose then
+            print "We failed to find one. We must precompose our isomorphism";
+            print "of Lie algebras with the outer automorphism of sl_n.";
+            print "We get the following mapping:";
+            for t in triples do
+                printf "The matrix \n%o\n is sent to\n%o\n", t[1], t[3];
+            end for;
+        end if;
         system := Matrix([&cat[Eltseq(p[1]*e - e*p[3]): p in triples] :
             e in Basis(Mat)]);
         K := Basis(Nullspace(system));
     end if;
     k := BaseRing(triples[1][1]);
     r := NumberOfRows(triples[1][1]);
-    return [Matrix(k,r,r,Eltseq(b)) : b in K];
+    T := Matrix(k,r,r,Eltseq(K[1]));
+    if verbose then
+        print "We solve the system of linear equations and find that the ";
+        printf "matrix\n%o\n is a projective equivalence of varieties.\n", T;
+    end if;
+    return T;
 end function;
 
 
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
-EquivalenceToVeronese := function(n, d, eqs : f := 1)
-    lie_isom := VeroneseLieAlgebraIsom(n, d, eqs : f := f);
-    return LieAlgebraRepresentationIsomorphism(lie_isom);
+EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
+    lie_isom := VeroneseLieAlgebraIsom(n, d, eqs : f := f, verbose := verbose);
+    return LieAlgebraRepresentationIsomorphism(lie_isom: verbose := verbose);
 end function;
