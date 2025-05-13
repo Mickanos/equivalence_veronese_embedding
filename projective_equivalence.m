@@ -32,10 +32,8 @@ ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
   count := 0;
   repeat
     A := RandomElements(eqs, n_eqs);
-    M := HorizontalJoin(
-        HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
-        b in Basis(MatrixAlgebra(F,n))]): a in A]),
-        Matrix(F, n^2, 1, [Trace(b) : b in Basis(MatrixAlgebra(F,n))]));
+    M := HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
+        b in Basis(MatrixAlgebra(F,n))]): a in A]);
     M := Transpose(M);
     RemoveZeroRows(~M);
     M := Transpose(M);
@@ -45,14 +43,14 @@ ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
         printf "Warning: already %o tries and the Lie algebra could not", count;
         print " be computed.";
     end if;
-  until #B eq r^2 - 1;
+  until #B eq r^2;
   printf "Lie algebra computed in %o tries.\n", count;
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   if verbose then
     print "We found a basis for the Lie algebra of the variety. Is is:";
     print MatBasis;
   end if;
-  ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
+  ALie := sub<MatrixLieAlgebra(F, n) | [MyLieBracket(a, b) : a, b in MatBasis]>;
   L, phi := LieAlgebra(ALie);
   return L, Inverse(phi);
 end function;
