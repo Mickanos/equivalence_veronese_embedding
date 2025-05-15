@@ -10,7 +10,7 @@ load "projective_equivalence.m";
 // of the variety. The choice of f has a big effect on the runtime of the
 // equivalence computation. However, the optimal choice depends on the
 // parameters and we only have empirical data for the moment.
-RoutineTest := procedure(p, n, d : f := 1, verbose := false)
+RoutineTest := procedure(p, n, d : f := 1, verbose := false, check := false)
     print "Time to generate equations:";
     time eqs := GenTwistedVeronese(p, n, d);
     if verbose then
