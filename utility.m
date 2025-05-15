@@ -7,6 +7,11 @@ Colinearity := function(a, b)
   return t;
 end function;
 
+ElementaryMatrix := function(k, m, n, i, j)
+  return Matrix(k, [[s eq i and t eq j select 1 else 0 : t in [1..n]]:
+    s in [1..m]]);
+end function;
+
 //Input: a field k and a matrix M with coefficients in an extension K/k.
 //Output: a matrix with coefficients in k, representing the same map as k-linear
 //instead of K-linear. The basis of K as an extension of k is used to produce
@@ -133,4 +138,22 @@ RandomElements := function(L, n)
     Include(~res, Random(s) + 1);
   until #res eq n;
   return [L[i] : i in res];
+end function;
+
+//Computes the Lie algebra of the Veronese embedding of degree d (with n vars).
+//Note that it is a homomorphism of Lie algebras. However, we output a map
+// between Matrix algebras for practical reasons.
+LieAlgebraVeroneseEmbedding := function(k, n, d)
+    R := PolynomialRing(k, n);
+    mons := SetToSequence(MonomialsOfDegree(R, d));
+    op := [[map<R -> R | p :-> R.j * Derivative(p,i)>: j in [1..n]]:
+        i in [1..n]];
+    Mats := [[Matrix(
+        k,
+        [[MonomialCoefficient(im, col) : col in mons]
+            where im is mon @ op[i][j]: mon in mons]
+        ): j in [1..n]]: i in [1..n]];
+    Mn := MatrixAlgebra(k, n);
+    Mr := MatrixAlgebra(k, #mons);
+    return map< Mn -> Mr | M :-> &+[M[i,j] * Mats[i][j]: i,j in [1..n]]>, mons;
 end function;

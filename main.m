@@ -10,8 +10,8 @@ load "projective_equivalence.m";
 // of the variety. The choice of f has a big effect on the runtime of the
 // equivalence computation. However, the optimal choice depends on the
 // parameters and we only have empirical data for the moment.
-RoutineTest := procedure(p, n, d : f := 1, verbose := false, check := false)
-    print "Time to generate equations:";
+RoutineTest := procedure(p, n, d : f := 1, verbose := false, check := true)
+    print "Time taken to generate equations:";
     time eqs := GenTwistedVeronese(p, n, d);
     if verbose then
         printf "We have a twist of the %o-dimensional veronese variety of", n;
@@ -19,11 +19,37 @@ RoutineTest := procedure(p, n, d : f := 1, verbose := false, check := false)
         print "are :";
         print eqs;
     end if;
-    print "Time to look for a projective equivalence:";
+    print "Time taken to compute a projective equivalence:";
     time sol := EquivalenceToVeronese(n, d, eqs : f := f, verbose := verbose);
-    if CheckEquivalenceToVeronese(eqs, sol, n, d) then
-        print "An equivalence was found.";
-    else
-        print "The program did output an incorrect solution.";
+    if check then 
+        if CheckEquivalenceToVeronese(eqs, sol, n, d) then
+            print "An equivalence was found.";
+        else
+            print "The program gave an incorrect output.";
+        end if;
+    end if;
+end procedure;
+
+RoutineTestLie := procedure(p, n, d : verbose := false, check := true)
+    print "Time taken to generate a Lie algebra:";
+    time g, natural_rep, vero_basis := GenTwistedVeroneseLieAlgebra(p, n, d);
+    if verbose then
+        printf "We have generated a random conjugate of the Lie algebra of";
+        printf " the %o-dimensional Veronese variety of degree %o over", n, d;
+        printf "the field of cardinal %o. A basis of this Lie algebra is:\n", p;
+        print [b @ natural_rep : b in Basis(g)];
+    end if;
+    print "Time taken to compute an isomorphism of representations:";
+    time sol := EquivalenceFromLie(g, natural_rep, n, d : verbose := verbose);
+    if check then
+        soli := sol^-1;
+        Mat := MatrixLieAlgebra(BaseRing(g), NumberOfMonomials(n, d));
+        s := &and[Mat!(sol * b * soli) in Codomain(natural_rep) :
+            b in vero_basis];
+        if s then
+            print "An isomorphism of representations was computed.";
+        else
+            print "The program returns an incorrect output.";
+        end if;
     end if;
 end procedure;

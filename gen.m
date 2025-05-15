@@ -121,6 +121,25 @@ GenTwistedVeronese := function(p, n, d)
   return [PolySubstitution(e, T) : e in vero_eqs];
 end function;
 
+GenTwistedVeroneseLieAlgebra := function(p, n, d)
+    k := GF(p);
+    phi := LieAlgebraVeroneseEmbedding(k, n, d);
+    Mn := Domain(phi);
+    Mr := Codomain(phi);
+    ZTMatrices:= [ElementaryMatrix(k, n, n, i, j) : i, j in [1..n] | i ne j] cat
+      [DiagonalMatrix(k, [s eq i select 1 else 0 : s in [1..n-1]] cat [-1]):
+        i in [1..n-1]];
+    LieBasis := [b @ phi : b in ZTMatrices];
+    r := Degree(Mr);
+    repeat
+      T := RandomMatrix(k, r, r);
+    until IsUnit(T);
+    Ti := T^-1;
+    TwistedLieBasis := [T*b*Ti : b in LieBasis];
+    S := sub<MatrixLieAlgebra(k, r) | TwistedLieBasis>;
+    L, psi := LieAlgebra(S);
+    return L, Inverse(psi), LieBasis;
+end function;
 
 // **********************************************************
 // ** COMPUTE SYMMETRIC MATRIX ATTACHED TO QUADRATIC FORM ***

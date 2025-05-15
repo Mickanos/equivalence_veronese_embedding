@@ -1,20 +1,3 @@
-//Computes the Lie algebra of the Veronese embedding of degree d (with n vars).
-//Note that it is a homomorphism of Lie algebras. However, we output a map
-// between Matrix algebras for practical reasons.
-LieAlgebraVeroneseEmbedding := function(k, n, d)
-    R := PolynomialRing(k, n);
-    mons := SetToSequence(MonomialsOfDegree(R, d));
-    op := [[map<R -> R | p :-> R.j * Derivative(p,i)>: j in [1..n]]:
-        i in [1..n]];
-    Mats := [[Matrix(
-        k,
-        [[MonomialCoefficient(im, col) : col in mons]
-            where im is mon @ op[i][j]: mon in mons]
-        ): j in [1..n]]: i in [1..n]];
-    Mn := MatrixAlgebra(k, n);
-    Mr := MatrixAlgebra(k, #mons);
-    return map< Mn -> Mr | M :-> &+[M[i,j] * Mats[i][j]: i,j in [1..n]]>, mons;
-end function;
 
 // *******************************
 // ** COMPUTING THE LIE ALGEBRA **
@@ -52,10 +35,7 @@ ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
   end if;
   ALie := sub<MatrixLieAlgebra(F, n) | [MyLieBracket(a, b) : a, b in MatBasis]>;
   L, phi := LieAlgebra(ALie);
-  ZeroTrace := Matrix([[Trace(AdjointMatrix(L,a))] : a in Basis(L)]);
-  ZTBasis := [L!b : b in Basis(Nullspace(ZeroTrace))];
-  res, psi := sub<L | ZTBasis>;
-  return res, Inverse(phi * psi);
+  return L, Inverse(phi);
 end function;
 
 
@@ -65,10 +45,8 @@ end function;
 //respectively of the given variety and of the Veronese embedding.
 //The third element of the tuple is the same equivalence precomposed
 //by negative transpose in sln.
-VeroneseLieAlgebraIsom := function(n, d, eqs : f := 1, verbose := false)
-    Quads := [QuadricToMatrix(e) : e in eqs];
-    k := BaseRing(Quads[1]);
-    g, natural_rep := ComputeLieAlgebra(Quads, n: f := f, verbose := verbose);
+VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
+    k := BaseRing(g);
     g_to_sln := SplitSln(g);
     if verbose then
         print "We have computed a splitting of the Lie algebra.";
@@ -133,6 +111,21 @@ end function;
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
 EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
-    lie_isom := VeroneseLieAlgebraIsom(n, d, eqs : f := f, verbose := verbose);
+    Quads := [QuadricToMatrix(e) : e in eqs];
+    g, natural_rep := ComputeLieAlgebra(Quads, n: f := f, verbose := verbose);
+    lie_isom := VeroneseLieAlgebraIsom(g,
+        natural_rep,
+        n,
+        d :
+        verbose := verbose);
+    return LieAlgebraRepresentationIsomorphism(lie_isom: verbose := verbose);
+end function;
+
+EquivalenceFromLie := function(g, natural_rep, n, d : verbose := false)
+    lie_isom := VeroneseLieAlgebraIsom(g,
+        natural_rep,
+        n,
+        d :
+        verbose := verbose);
     return LieAlgebraRepresentationIsomorphism(lie_isom: verbose := verbose);
 end function;
