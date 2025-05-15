@@ -80,11 +80,13 @@ LieAlgebraRepresentationIsomorphism := function(triples: verbose := false)
     Mat := Parent(triples[1][1]);
     system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in triples] :
         e in Basis(Mat)]);
-    K := Basis(Nullspace(system));
+    target_rank := Dimension(Mat) - 1;
     if verbose then
         print "We compute an isomorphism of representations.";
     end if;
-    if IsEmpty(K) then
+    if Rank(system) eq target_rank then
+        K := Basis(Nullspace(system));
+    else
         if verbose then
             print "We failed to find one. We must precompose our isomorphism";
             print "of Lie algebras with the outer automorphism of sl_n.";
