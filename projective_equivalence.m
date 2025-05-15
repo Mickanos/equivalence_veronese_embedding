@@ -52,7 +52,10 @@ ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
   end if;
   ALie := sub<MatrixLieAlgebra(F, n) | [MyLieBracket(a, b) : a, b in MatBasis]>;
   L, phi := LieAlgebra(ALie);
-  return L, Inverse(phi);
+  ZeroTrace := Matrix([[Trace(AdjointMatrix(L,a))] : a in Basis(L)]);
+  ZTBasis := [L!b : b in Basis(Nullspace(ZeroTrace))];
+  res, psi := sub<L | ZTBasis>;
+  return res, Inverse(phi * psi);
 end function;
 
 
