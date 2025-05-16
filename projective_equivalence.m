@@ -20,13 +20,13 @@ ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
     M := Transpose(M);
     RemoveZeroRows(~M);
     M := Transpose(M);
-    B := Basis(Nullspace(M));
     count +:=1;
     if IsDivisibleBy(count, 5) then
         printf "Warning: already %o tries and the Lie algebra could not", count;
         print " be computed.";
     end if;
-  until #B eq r^2;
+  until Rank(M) eq n^2 - r^2;
+  B := Basis(Nullspace(M));
   printf "Lie algebra computed in %o tries.\n", count;
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   if verbose then
