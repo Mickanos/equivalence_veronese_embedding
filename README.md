@@ -1,3 +1,8 @@
 Launch magma from the the directory containing the repository.  
-"tests.m" can be loaded to run the automatic tests.  
-Otherwise, simply load "main.m". The Procedure `RoutineTest` shows the main functions.
+The file "tests.m" can be loaded to run some automatic tests.  
+The file "examples.m" can be loaded to reproduce the examples discussed in
+Section 6 of the paper. 
+Otherwise, simply load "main.m". The procedure `RoutineTest` generates a random
+variety equivalent to a Veronese variety, forgets the equivalence and computes
+it again. The procedure RoutineTestLie does the same, but skips the computation
+of the Lie algebra, which is the bottleneck.
