@@ -3,7 +3,7 @@
 // ********************************
 
 //(not very fast due to polynomial arithmetic, but good enough for our purposes)
-
+//Generates Veronese threefolds.
 // conjectured AES-128 parameters:
 // p := NextPrime(2^128);
 // d := 14;
@@ -110,6 +110,8 @@ GetEquationThreefold := function(p, d)
   return VeroneseReconstruction(SigmaP, M);
 end function;
 
+//Generate a variety by computing the image of a Veronese variety by
+//a random automorphism of the ambient projective space.
 GenTwistedVeronese := function(p, n, d)
   k := GF(p);
   r := NumberOfMonomials(n, d);
@@ -121,6 +123,8 @@ GenTwistedVeronese := function(p, n, d)
   return [PolySubstitution(e, T) : e in vero_eqs];
 end function;
 
+//Generate the twist of the Lie algebra of a variety by a random matrix.
+//Useful to skip the computation of the Lie algebra.
 GenTwistedVeroneseLieAlgebra := function(p, n, d)
     k := GF(p);
     phi := LieAlgebraVeroneseEmbedding(k, n, d);
@@ -168,11 +172,4 @@ function QuadricToMatrix(Q);
     end if;
   end for;
   return M;
-end function;
-
-GenVeronese := function(p, d, k)
-    Fq:=GF(p);
-    SigmaP, M := VeronesePublicData(Fq, d, k);
-    I := VeroneseReconstruction(SigmaP, M);
-    return I;
 end function;

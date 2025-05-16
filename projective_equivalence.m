@@ -70,9 +70,10 @@ VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.
-//They should be represented as one list of pairs of matrices
+//They should be represented as one list of triples of matrices
 //corresponding to respective basis elements of each Lie algebras
 //that are images of one another by a Lie algebra isomorphism.
+//Elements two and three are conjugate by the outer automorphism of gl_n.
 //Outputs an isomorphism of the natural representation. That is,
 //an invertible matrix T in gl_n such that the second Lie algebra is the
 //conjugate of the first by T.
@@ -123,6 +124,7 @@ EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
     return LieAlgebraRepresentationIsomorphism(lie_isom: verbose := verbose);
 end function;
 
+//The same as above, but but assuming that the Lie algebra is already given.
 EquivalenceFromLie := function(g, natural_rep, n, d : verbose := false)
     lie_isom := VeroneseLieAlgebraIsom(g,
         natural_rep,

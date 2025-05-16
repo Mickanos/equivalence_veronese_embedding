@@ -1,6 +1,11 @@
 load "utility.m";
 load "veronese_equations.m";
 load "gen.m";
+
+//Checking our heuristic optimisation for the bottleneck of the  computation
+// of the Lie algebra.
+// Checks how often taking a fraction s of the equations of a random variety
+// oisomorphic to the Veronese variety allows to compute the Lie algebra
 success_frequency := function(p, N, d, s : reps := 100)
     successes := 0;
     timing := 0;
@@ -29,6 +34,7 @@ success_frequency := function(p, N, d, s : reps := 100)
     return successes/reps, timing/reps;
 end function;
 
+//Runs the test above over a range of values for s.
 transversal_test := procedure(p, n, d, min, step, n_steps : reps := 100)
     f := min;
     for _ in [1..n_steps] do

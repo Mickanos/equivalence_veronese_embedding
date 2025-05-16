@@ -30,6 +30,9 @@ RoutineTest := procedure(p, n, d : f := 1, verbose := false, check := true)
     end if;
 end procedure;
 
+// The same test as above, but instead of generating a twist of a Veronese
+// variety and computing its Lie algebra, we only compute a twist of the Lie
+// algebra of a Veronese variety.
 RoutineTestLie := procedure(p, n, d : verbose := false, check := true)
     print "Time taken to generate a Lie algebra:";
     time g, natural_rep, vero_basis := GenTwistedVeroneseLieAlgebra(p, n, d);

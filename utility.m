@@ -7,6 +7,8 @@ Colinearity := function(a, b)
   return t;
 end function;
 
+//Outputs the elementary matrix of size mxn with 1 in position (i,j), and 0
+//everywhere else.
 ElementaryMatrix := function(k, m, n, i, j)
   return Matrix(k, [[s eq i and t eq j select 1 else 0 : t in [1..n]]:
     s in [1..m]]);
@@ -23,6 +25,7 @@ MatrixRestrictionOfScalars := function(k, M)
     return Matrix(LongRows);
 end function;
 
+//Computes an isomorphism to an associative matrix algebra
 SplitMatrixAlgebra := function(A)
   _, n := IsSquare(Dimension(A));
   k := BaseField(A);
@@ -33,6 +36,7 @@ SplitMatrixAlgebra := function(A)
   return hom<A -> MAss | [M @ phi: M in Mats]> * Inverse(phi);
 end function;
 
+//Product in infix form. There is probably a proper syntax in Magma to do that.
 Prod := function(a,b)
     return a * b;
 end function;
@@ -61,6 +65,7 @@ PolySubstitution := function(p, M)
   return Evaluate(p, [&+[r[i]*R.i : i in [1..n]]: r in Rows(M)]);
 end function;
 
+//Computes the number of degree d homogeneous monomials with n indeterminates
 NumberOfMonomials := function(n, d)
   return Binomial(n+d-1, d);
 end function;
@@ -109,6 +114,7 @@ PrecomputeVeroneseEquation := procedure(F, n, d)
   PrintFile(F, s);
 end procedure;
 
+//Recover equations for the Veronese variety from the appropriate function.
 GetVeroneseEquations := function(n, d)
   return eval Sprintf("return veronese_%o_%o();", n, d);
 end function;
@@ -123,6 +129,8 @@ CheckProjectiveEquivalence := function(eqs_l, eqs_r, T)
   return I_l eq I_r;
 end function;
 
+//Check if the matrix T gives an equivalence between the variety defined by eqs
+//And the n-dimensional variety of degree d.
 CheckEquivalenceToVeronese := function(eqs, T, n, d)
   k := BaseRing(T);
   r := NumberOfMonomials(n, d);
@@ -131,6 +139,7 @@ CheckEquivalenceToVeronese := function(eqs, T, n, d)
   return CheckProjectiveEquivalence(eqs, veqs, T);
 end function;
 
+//Outputs a random subsequence of L of size n
 RandomElements := function(L, n)
   s := #L-1;
   res := {};
