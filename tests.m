@@ -1,7 +1,7 @@
 load "main.m";
 
 TestSplitSln := procedure()
-    eqs := GenTwistedVeronese(NextPrime(2^20), 2, 2);
+    eqs := GenTwistedVeronese(NextPrime(2^20), 3, 3);
     Quads := [QuadricToMatrix(e) : e in eqs];
     Lie := ComputeLieAlgebra(Quads, 3);
     g := quo < Lie | Basis(Center(Lie))>;
@@ -12,7 +12,7 @@ TestSplitSln := procedure()
 end procedure;
 
 TestSplitSlnSplitCartan := procedure()
-    eqs := GenTwistedVeronese(NextPrime(2^20), 2, 2);
+    eqs := GenTwistedVeronese(NextPrime(2^20), 3, 3);
     Quads := [QuadricToMatrix(e) : e in eqs];
     Lie := ComputeLieAlgebra(Quads, 3);
     g := quo < Lie | Basis(Center(Lie))>;
@@ -36,8 +36,10 @@ end procedure;
 TestVeroneseLieAlgebraIsom := procedure()
     n := 4;
     d := 2;
-    eqs := GenTwistedVeronese(NextPrime(2^20), d, 2);
-    pairs := VeroneseLieAlgebraIsom(n, d, eqs);
+    eqs := GenTwistedVeronese(NextPrime(2^20), n, d);
+    Quads := [QuadricToMatrix(e) : e in eqs];
+    g, natural_rep := ComputeLieAlgebra(Quads, n);
+    pairs := VeroneseLieAlgebraIsom(g, natural_rep, n, d);
     k := BaseRing(pairs[1][1]);
     gl := MatrixLieAlgebra(k, 10);
     A := sub<gl | [p[1] : p in pairs]>;
@@ -56,10 +58,10 @@ end procedure;
 TestEquivalenceToVeronese := procedure()
     n := 4;
     d := 2;
-    eqs := GenTwistedVeronese(NextPrime(2^20), d, 2);
+    eqs := GenTwistedVeronese(NextPrime(2^20), n, d);
     sol := EquivalenceToVeronese(n, d, eqs);
-    k := BaseRing(sol[1]);
-    T := sol[1];
+    k := BaseRing(sol);
+    T := sol;
     assert CheckEquivalenceToVeronese(eqs, T, n, d);
 end procedure;
 
