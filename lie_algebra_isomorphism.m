@@ -1,6 +1,6 @@
 //Compute the roots and corresponding spaces of the adjoint representation of split Cartan subalgebra H on L.
 ComputeRoots := function(L, H)
-	mats := [Matrix(AdjointMatrix(L, h)) : h in Basis(H)];
+	mats := [Matrix(-AdjointMatrix(L, h)) : h in Basis(H)];
 	spaces, roots := CommonEigenspaces(mats);
 	roots := [Vector(r) : r in roots];
 	i := Index(roots, Parent(roots[1])!0);
@@ -42,34 +42,22 @@ Eigenbasis := function(L, spaces, roots)
 		: i -> space in spaces];
 end function;
 
-GetIndexedRoot := function(ordered_roots, i, j)
-	return [r[3] : r in ordered_roots | r[1] eq i and r[2] eq j][1];
-end function;
-
-FindIndexedRoot := function(roots, indexed_roots, i, j)
-	return Index(roots, GetIndexedRoot(indexed_roots, i, j));
-end function;
-
 //This implementation is not terribly efficient but that part should be very fast anyway.
 IndexRoots := function(roots)
 	n := Degree(roots[1]);
-	res := [<1, 2, roots[1]>];
-	Append(~res, <2, 1, -roots[1]>);
+	res := AssociativeArray();
+	res[<1,2>] := roots[1];
+	res[<2,1>] := -roots[1];
 	//The loop invariant is that at the start of iteration i, all the roots of the 
 	//form Phi_{kl} such that k < l <= i are properly indexed in res.
 	for i in [2..n-1] do
-		phi_1_i := GetIndexedRoot(res, 1, i);
-		phi_i_ip1 := [r : r in roots | phi_1_i + r in roots][1];
-		phi_1_ip1 := phi_1_i + phi_i_ip1;
-		Append(~res, <i, i+1, phi_i_ip1>);
-		Append(~res, <i+1, i, -phi_i_ip1>);
-		Append(~res, <1, i+1, phi_1_ip1>);
-		Append(~res, <i+1, 1, -phi_1_ip1>);
+		res[<i,i+1>] := [r : r in roots | res[<1,i>] + r in roots][1];
+		res[<1,i+1>] := res[<1,i>] + res[<i,i+1>];
+		res[<i+1,i>] := -res[<i,i+1>];
+		res[<i+1,1>] := -res[<1,i+1>];
 		for j in [2..i-1] do
-			phi_1_j := GetIndexedRoot(res, 1, j);
-			phi_j_ip1 := [r : r in roots | r + phi_1_j eq phi_1_ip1][1];
-			Append(~res, <j, i+1, phi_j_ip1>);
-			Append(~res, <i+1, j, -phi_j_ip1>);
+			res[<j,i+1>] := [r : r in roots | r + res[<i,j>] eq res[<1,i+1>]][1];
+			res[<i+1,j>] := -res[<j,i+1>];
 		end for;
 	end for;
 	return res;
@@ -79,69 +67,69 @@ GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
 	n := Degree(roots[1]);
 	p := Characteristic(BaseRing(roots[1]));
 	L := Parent(eigenbasis[1][1]);
-	res := [];
+	res := AssociativeArray(); 
 	k := BaseRing(H);
 	if p gt 2 then
-		for t in indexed_roots do
-			i := Index(roots, t[3]);
-			Append(~res, <t[1], t[2], eigenbasis[i][1]>);
+		for key in Keys(indexed_roots) do
+			i := Index(roots, indexed_roots[key]);
+			res[key] := eigenbasis[i][1];
 		end for;
 	else
-		ell := FindIndexedRoot(roots, indexed_roots, 1, 2);
-		Append(~res, <1, 2, eigenbasis[ell][1]>);
-		Append(~res, <2, 1, eigenbasis[ell][2]>);
+		ell := Index(roots, indexed_roots[<1,2>]);
+		res[<1,2>] := eigenbasis[ell][1];
+		res[<2,1>] := eigenbasis[ell][2];
 		for i in [2..n-1] do
 			for j in [2..i] do
-				ell := FindIndexedRoot(roots, indexed_roots, j, i+1);
-				e_1_j := GetIndexedRoot(res, 1, j);
-				e_j_ip1 := [e : e in eigenbasis[ell] | not IsZero(e_1_j * e)][1];
-				e_ip1_j := [e : e in eigenbasis[ell] | e ne e_j_ip1][1];
-				Append(~res, <j, i+1, e_j_ip1>);
-				Append(~res, <i+1, j, e_ip1_j>);
+				ell := Index(roots, indexed_roots[<j,i+1>]);
+				res[<j,i+1>] := [e : e in eigenbasis[ell] | not IsZero(res[<1,j>] * e)][1];
+				res[<i+1,j>] := [e : e in eigenbasis[ell] | e ne res[<j,i+1>]][1];
 			end for;
-			ell := FindIndexedRoot(roots, indexed_roots, 1, i+1);
-			e_2_ip1 := GetIndexedRoot(res, 2, i+1);
-			e_ip1_1 := [e : e in eigenbasis[ell] | not IsZero(e_2_ip1 * e)][1];
-			e_1_ip1 := [e : e in eigenbasis[ell] | e ne e_ip1_1][1];
-			Append(~res, <1, i+1, e_1_ip1>);
-			Append(~res, <i+1, 1, e_ip1_1>);
+			ell := Index(roots, indexed_roots[<1,i+1>]);
+			res[<i+1,1>] := [e : e in eigenbasis[ell] | not IsZero(res[<2,i+1>] * e)][1];
+			res[<1,i+1>] := [e : e in eigenbasis[ell] | e ne res[<i+1,1>]][1];
 		end for;
 	end if;
 
 	//Now, to find e_1_1.
-	system := Transpose(Matrix([Eltseq(GetIndexedRoot(indexed_roots, 1, 2))]
-			cat [Eltseq(GetIndexedRoot(indexed_roots, i, i+1)): i in [2..n-1]]));
+
+	total_space := Module(L);
+	bad_space := sub<total_space | [Vector(res[<i,i+1>] * res[<i+1, i>]): i in [1..n-1]]>;
+	system := Transpose(Matrix([indexed_roots[<i,i+1>]: i in [1..n-1]]));
 	sol, nullspace := Solution(system, Vector([One(k)] cat [Zero(k) : _ in [1..n-2]]));
-	total_space := Module(Parent(res[1][3]));
-	bad_space := sub<total_space | [Vector(GetIndexedRoot(res, i, i+1)
-					* GetIndexedRoot(res, i+1, i)): i in [1..n-1]]>;
 	sol := L!(H!Eltseq(sol));
 	if not total_space!sol in bad_space then
-		e_1_1 := sol;
-		Append(~res, <1, 1, sol>);
+		res[<1,1>] := sol;
 	else
 		bas_nul := [L!(H!Eltseq(b)) : b in Basis(nullspace)];
 		exit_ticket := [b : b in bas_nul |
 			not total_space!b in bad_space][1];
-		e_1_1 := sol + exit_ticket;
+		res[<1,1>] := sol + exit_ticket;
 	end if;
-	Append(~res, <1, 1, e_1_1>);
 
 	//And the rest of H.
 	for k in [2..n] do
-		mat_1 := Transpose(Matrix([Eltseq(GetIndexedRoot(indexed_roots, k, 1))]
-					cat [Eltseq(GetIndexedRoot(indexed_roots, i, j))
+		mat_1 := Transpose(Matrix([Eltseq(indexed_roots[<k,1>])]
+					cat [Eltseq(indexed_roots[<i,j>])
 						: i, j in [1..n] | i ne j and i ne k and j ne k]));
-		quotient, proj := quo<total_space | [Vector(GetIndexedRoot(res, 1, k)
-							* GetIndexedRoot(res, k, 1))]>;
+		quotient, proj := quo<total_space | [Vector(res[<1,k>] * res[<k,1>])]>;
 		mat_2 := Matrix([Eltseq((total_space!(L!h)) @ proj) : h in Basis(H)]);
 		N := (n-1)*(n-2);
-		target := Vector([1] cat [0 : _ in [1..N]] cat Eltseq((total_space!e_1_1) @ proj));
+		target := Vector([1] cat [0 : _ in [1..N]] cat Eltseq((total_space!res[<1,1>]) @ proj));
 		sol := Solution(HorizontalJoin(mat_1, mat_2), target);
-		e_k_k := H!(Eltseq(sol));
-		Append(~res, <k, k, e_k_k>);
+		res[<k, k>] := H!(Eltseq(sol));
 	end for;
-	return [GetIndexedRoot(res, i, j): i,j in [1..n]];
+
+	//Some rescaling is needed.
+	for i in [2..n-1], j in [i+1..n] do
+		lambda := Colinearity(res[<1,i>]*res[<i,j>],res[<1,j>]);
+		res[<i,j>] *:= lambda;
+	end for;
+	for i in [2..n], j in [1..i-1] do
+		lambda := Colinearity(res[<i,j>]*res[<j,i>],res[<i,i>] - res[<j,j>]);
+		res[<i,j>] *:= lambda;
+	end for;
+
+	return [res[<i,j>]: i,j in [1..n]];
 end function;
 
 NormaliseSplitLieAlgebra := function(L, H)
@@ -195,21 +183,17 @@ end function;
 EnvelopingAlgebra := function(L)
   K, LK, HK, bc_map := BaseChangeAndSplitCartan(L);
   NL, Liso := NormaliseSplitLieAlgebra(LK, HK);
-  assert false;
   _, n := IsSquare(Dimension(L));
   iso := bc_map * Liso;
   Ma := MatrixAlgebra(K, n);
   iso := map<L -> Ma | b :-> Ma!Eltseq(b @ iso)>;
-  assert IsLieHom(iso, L);
   if K eq BaseRing(L) then
   	return true, iso;
   end if;
-  Ass, phi := Algebra(Ma);
-  RAss, res := MyRestrictionOfScalars(Ass, BaseRing(L));
-  iso := iso * phi * res;
-  return false, iso;
-  //_, adjustment := AdjustStructureConstants(L, iso);
-  //return false, iso * adjustment;
+  _, phi := Algebra(Ma);
+  iso := iso * phi;
+  _, adjustment := AdjustStructureConstants(L, iso);
+  return false, iso * adjustment;
 end function;
 
 //Outputs an isomorphism from the Lie algebra L to sln.

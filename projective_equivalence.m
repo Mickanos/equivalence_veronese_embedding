@@ -51,15 +51,16 @@ VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
             print (b @ (g_to_gln * veronese_rep));
         end for;
     end if;
-    c := Basis(Center(g))[1];
-    N := Degree(Codomain(natural_rep));
-    M_r := Codomain(g_to_gln);
-    M_N := Codomain(natural_rep);
-    M := (c @ natural_rep) - ((c @ g_to_gln) @ veronese_rep);
-    t := Colinearity(Vector(One(M_N)), Vector(M));
-    g_to_gln := g_to_gln * map< M_r -> M_r | a :-> a + (t/d) * One(M_r)>;
-    print c @ natural_rep;
-    print c @ g_to_gln @ veronese_rep;
+    if not IsZero(k!n) then
+	    M_r := Codomain(g_to_gln);
+	    M_N := Codomain(natural_rep);
+	    c := Basis(Center(g))[1];
+	    c /:= (c @ g_to_gln)[1,1];
+	    t := (c @ natural_rep)[1,1];
+	    g_to_gln := g_to_gln * map< M_r -> M_r | a :-> a + (d-t) * Trace(a) * One(M_r)>;
+	    assert IsLieHom(g_to_gln, g);
+	    print ((c @ g_to_gln) @ veronese_rep) - (c @ natural_rep);
+    end if;
     return [<Matrix(b @ natural_rep),
         (b @ g_to_gln) @ veronese_rep ,
         Transpose(-b @ g_to_gln) @ veronese_rep>: b in Basis(g)];
@@ -81,7 +82,7 @@ LieAlgebraRepresentationIsomorphism := function(triples: verbose := false)
     if verbose then
         print "We compute an isomorphism of representations.";
     end if;
-    if Rank(system) le target_rank then
+    if Rank(system) eq target_rank then
         K := Basis(Nullspace(system));
     else
         if verbose then
