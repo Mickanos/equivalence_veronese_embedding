@@ -3,43 +3,30 @@
 // ** COMPUTING THE LIE ALGEBRA **
 // *******************************
 
-// input: n x n matrices A1, ..., At
-// output: The Lie algebra of square matrices X such that
-// X^t*Ai + Ai*X is contained in <A1, ..., At> for all i
+//Input: A sequence of homogeneous polynomial equations for a projective variety X in P^N.
 
-ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
-  F := BaseRing(eqs[1]);
-  n := Nrows(eqs[1]);
-  AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;
-  n_eqs := Ceiling(f * #eqs);
-  count := 0;
-  repeat
-    A := RandomElements(eqs, n_eqs);
-    M := HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
-        b in Basis(MatrixAlgebra(F,n))]): a in A]);
-    M := Transpose(M);
-    RemoveZeroRows(~M);
-    M := Transpose(M);
-    count +:=1;
-    if IsDivisibleBy(count, 5) then
-        printf "Warning: already %o tries and the Lie algebra could not", count;
-        print " be computed.";
-    end if;
-  until Rank(M) eq n^2 - r^2;
-  B := Basis(Nullspace(M));
-  printf "Lie algebra computed in %o tries.\n", count;
-  MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
-  if verbose then
-    print "We found a basis for the Lie algebra of the variety. Is is:";
-    print MatBasis;
-  end if;
-  ALie := sub<MatrixLieAlgebra(F, n) | [MyLieBracket(a, b) : a, b in MatBasis]>;
-  L, phi := LieAlgebra(ALie);
-  return L, Inverse(phi);
+ComputeLieAlgebra := function(eqs)
+	//In practice for now, we only get quadrics so there is no need to sort out the degrees.
+	G, space,  mons := FreeHomogeneousPolys(eqs);
+	R := Parent(eqs[1]);
+	N := Rank(R);
+	k := BaseRing(R);
+	P := Transpose(BasisMatrix(space));
+	F := Nullspace(P);
+	forms := Transpose(BasisMatrix(F));
+	assert &and[IsZero((f, s)) : f in Basis(F), s in Basis(space)];
+	sys := Matrix([
+			&cat[Eltseq(PolyToVector(R.i * Derivative(e, j), mons) * forms) : e in eqs]
+		: i, j in [1..N]]);
+	basis := [Matrix(k, N, N, Eltseq(v)): v in Basis(Nullspace(sys))];
+	MA := MatrixLieAlgebra(k, N);
+	g := sub<MA | basis>;
+	g, map := LieAlgebra(g);
+	natural_rep := map<g -> MatrixAlgebra(k, N) | x :-> Matrix(x @@ map)>;
+	return g, natural_rep;
 end function;
 
-
-//Given quadratic equations for a projective variety, find an isomorphism
+//Given the Lie algebra of a projective variety, find an isomorphism
 //to the Lie algebra of the Veronese embedding.
 //Outputs a list of triples of equivalent basis elements of the Lie algebras
 //respectively of the given variety and of the Veronese embedding.
@@ -47,12 +34,12 @@ end function;
 //by negative transpose in sln.
 VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
     k := BaseRing(g);
-    g_to_sln := SplitSln(g);
+    g_to_gln := SplitGln(g);
     if verbose then
         print "We have computed a splitting of the Lie algebra.";
         for b in Basis(g) do
             printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
-            print (b @ g_to_sln);
+            print (b @ g_to_gln);
         end for;
     end if;
     veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
@@ -61,12 +48,21 @@ VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
         print "we get the following correspondences:";
         for b in Basis(g) do
             printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
-            print (b @ (g_to_sln * veronese_rep));
+            print (b @ (g_to_gln * veronese_rep));
         end for;
     end if;
+    c := Basis(Center(g))[1];
+    N := Degree(Codomain(natural_rep));
+    M_r := Codomain(g_to_gln);
+    M_N := Codomain(natural_rep);
+    M := (c @ natural_rep) - ((c @ g_to_gln) @ veronese_rep);
+    t := Colinearity(Vector(One(M_N)), Vector(M));
+    g_to_gln := g_to_gln * map< M_r -> M_r | a :-> a + (t/d) * One(M_r)>;
+    print c @ natural_rep;
+    print c @ g_to_gln @ veronese_rep;
     return [<Matrix(b @ natural_rep),
-        b @ (g_to_sln * veronese_rep ),
-        Transpose(-b @ g_to_sln) @ veronese_rep>: b in Basis(g)];
+        (b @ g_to_gln) @ veronese_rep ,
+        Transpose(-b @ g_to_gln) @ veronese_rep>: b in Basis(g)];
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.
@@ -85,7 +81,7 @@ LieAlgebraRepresentationIsomorphism := function(triples: verbose := false)
     if verbose then
         print "We compute an isomorphism of representations.";
     end if;
-    if Rank(system) eq target_rank then
+    if Rank(system) le target_rank then
         K := Basis(Nullspace(system));
     else
         if verbose then
@@ -114,8 +110,7 @@ end function;
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
 EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
-    Quads := [QuadricToMatrix(e) : e in eqs];
-    g, natural_rep := ComputeLieAlgebra(Quads, n: f := f, verbose := verbose);
+    g, natural_rep := ComputeLieAlgebra(eqs);
     lie_isom := VeroneseLieAlgebraIsom(g,
         natural_rep,
         n,

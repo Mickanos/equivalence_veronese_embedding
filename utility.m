@@ -29,11 +29,9 @@ end function;
 SplitMatrixAlgebra := function(A)
   _, n := IsSquare(Dimension(A));
   k := BaseField(A);
-  MAlg := MatrixAlgebra(k, n);
-  MAss, phi := Algebra(MAlg);
+  MA := MatrixAlgebra(k, n);
   I := MinimalRightIdeals(A : Limit := 1)[1];
-  Mats := [Matrix([e*a: e in Basis(I)]): a in Basis(A)];
-  return hom<A -> MAss | [M @ phi: M in Mats]> * Inverse(phi);
+  return map<A -> MA | a :-> Matrix([Coordinates(I, e*a): e in Basis(I)])>;
 end function;
 
 //Product in infix form. There is probably a proper syntax in Magma to do that.
@@ -52,7 +50,7 @@ end function;
 IsLieHom := function(f, L)
     brack_dom := IsAssociative(Domain(f)) select MyLieBracket else Prod;
     brack_co := IsAssociative(Codomain(f)) select MyLieBracket else Prod;
-    res := [<a,b> : a, b in L | brack_dom(a,b) @ f ne brack_co(a @ f, b @ f)];
+    res := [<a,b> : a, b in Basis(L) | brack_dom(a,b) @ f ne brack_co(a @ f, b @ f)];
     return IsEmpty(res), res;
 end function;
 
@@ -70,6 +68,10 @@ NumberOfMonomials := function(n, d)
   return Binomial(n+d-1, d);
 end function;
 
+PolyToVector := function(P, mons)
+	return Vector([MonomialCoefficient(P, m) : m in mons]);
+end function;
+
 //Takes a list of homogeneous polynomials of equal degrees.
 //Returns a basis of the space of polynomials spanned by elements of the list.
 FreeHomogeneousPolys := function(L)
@@ -82,7 +84,7 @@ FreeHomogeneousPolys := function(L)
   mons := SetToSequence(MonomialsOfDegree(R, d));
   vectors := [Vector([MonomialCoefficient(P, m) : m in mons]): P in L];
   space := sub<Parent(vectors[1]) | vectors>;
-  return [&+[v[i]*m : i->m in mons]: v in Basis(space)];
+  return [&+[v[i]*m : i->m in mons]: v in Basis(space)], space, mons;
 end function;
 
 //Generates the quadratic equations for the Veronese embedding
@@ -165,4 +167,20 @@ LieAlgebraVeroneseEmbedding := function(k, n, d)
     Mn := MatrixAlgebra(k, n);
     Mr := MatrixAlgebra(k, #mons);
     return map< Mn -> Mr | M :-> &+[M[i,j] * Mats[i][j]: i,j in [1..n]]>, mons;
+end function;
+
+RoS_Sequence := function(v, k)
+	return &cat[Eltseq(a, k): a in v];
+end function;
+
+MyRestrictionOfScalars := function(A, k)
+	K := BaseRing(A);
+	d := Degree(K, k);
+	B := Basis(K, k);
+	RA := AssociativeAlgebra< k, Dimension(A) * d | 
+		[[RoS_Sequence(Eltseq(BasisProduct(A, i, j) * bi * bj), k):
+			bj in B, j in [1..Dimension(A)]]
+			: bi in B, i in [1..Dimension(A)]]>;
+	res := map<A -> RA | a :-> RA!RoS_Sequence(Eltseq(a), k)>;
+	return RA, res;
 end function;
