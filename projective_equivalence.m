@@ -2,30 +2,38 @@
 // *******************************
 // ** COMPUTING THE LIE ALGEBRA **
 // *******************************
-/*
-//Input: A sequence of homogeneous polynomial equations for a projective variety X in P^N.
 
-ComputeLieAlgebra := function(eqs)
-	//In practice for now, we only get quadrics so there is no need to sort out the degrees.
-	G, space,  mons := FreeHomogeneousPolys(eqs);
-	R := Parent(eqs[1]);
-	N := Rank(R);
-	k := BaseRing(R);
-	P := Transpose(BasisMatrix(space));
-	F := Nullspace(P);
-	forms := Transpose(BasisMatrix(F));
-	assert &and[IsZero((f, s)) : f in Basis(F), s in Basis(space)];
-	sys := Matrix([
-			&cat[Eltseq(PolyToVector(R.i * Derivative(e, j), mons) * forms) : e in eqs]
-		: i, j in [1..N]]);
-	basis := [Matrix(k, N, N, Eltseq(v)): v in Basis(Nullspace(sys))];
-	MA := MatrixLieAlgebra(k, N);
-	g := sub<MA | basis>;
-	g, map := LieAlgebra(g);
-	natural_rep := map<g -> MatrixAlgebra(k, N) | x :-> Matrix(x @@ map)>;
-	return g, natural_rep;
+ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
+  F := BaseRing(eqs[1]);
+  n := Nrows(eqs[1]);
+  AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;
+  n_eqs := Ceiling(f * #eqs);
+  count := 0;
+  repeat
+    A := RandomElements(eqs, n_eqs);
+    M := HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
+        b in Basis(MatrixAlgebra(F,n))]): a in A]);
+    M := Transpose(M);
+    RemoveZeroRows(~M);
+    M := Transpose(M);
+    count +:=1;
+    if IsDivisibleBy(count, 5) then
+        printf "Warning: already %o tries and the Lie algebra could not", count;
+        print " be computed.";
+    end if;
+  until Rank(M) eq n^2 - r^2;
+  B := Basis(Nullspace(M));
+  printf "Lie algebra computed in %o tries.\n", count;
+  MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
+  if verbose then
+    print "We found a basis for the Lie algebra of the variety. Is is:";
+    print MatBasis;
+  end if;
+  ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
+  L, phi := LieAlgebra(ALie);
+  return L, Inverse(phi);
 end function;
-*/
+
 //Given the Lie algebra of a projective variety, find an isomorphism
 //to the Lie algebra of the Veronese embedding.
 //Outputs a list of triples of equivalent basis elements of the Lie algebras
@@ -107,7 +115,8 @@ end function;
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
 EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
-    g, natural_rep := ComputeLieAlgebra(eqs);
+        Quads := [QuadricToMatrix(e) : e in eqs];
+        g, natural_rep := ComputeLieAlgebra(Quads, n: f := f, verbose := verbose);
     lie_isom := VeroneseLieAlgebraIsom(g,
         natural_rep,
         n,
