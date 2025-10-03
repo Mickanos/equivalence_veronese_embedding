@@ -2,7 +2,7 @@
 // *******************************
 // ** COMPUTING THE LIE ALGEBRA **
 // *******************************
-
+/*
 //Input: A sequence of homogeneous polynomial equations for a projective variety X in P^N.
 
 ComputeLieAlgebra := function(eqs)
@@ -25,7 +25,7 @@ ComputeLieAlgebra := function(eqs)
 	natural_rep := map<g -> MatrixAlgebra(k, N) | x :-> Matrix(x @@ map)>;
 	return g, natural_rep;
 end function;
-
+*/
 //Given the Lie algebra of a projective variety, find an isomorphism
 //to the Lie algebra of the Veronese embedding.
 //Outputs a list of triples of equivalent basis elements of the Lie algebras
@@ -51,16 +51,12 @@ VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
             print (b @ (g_to_gln * veronese_rep));
         end for;
     end if;
-    if not IsZero(k!n) then
-	    M_r := Codomain(g_to_gln);
-	    M_N := Codomain(natural_rep);
-	    c := Basis(Center(g))[1];
-	    c /:= (c @ g_to_gln)[1,1];
-	    t := (c @ natural_rep)[1,1];
-	    g_to_gln := g_to_gln * map< M_r -> M_r | a :-> a + (d-t) * Trace(a) * One(M_r)>;
-	    assert IsLieHom(g_to_gln, g);
-	    print ((c @ g_to_gln) @ veronese_rep) - (c @ natural_rep);
-    end if;
+    M_r := Codomain(g_to_gln);
+    M_N := Codomain(natural_rep);
+    c := Basis(Center(g))[1];
+    c /:= (c @ g_to_gln)[1,1];
+    t := (c @ natural_rep)[1,1];
+    g_to_gln := g_to_gln * map< M_r -> M_r | a :-> a + (d-t) * Trace(a) * One(M_r)>;
     return [<Matrix(b @ natural_rep),
         (b @ g_to_gln) @ veronese_rep ,
         Transpose(-b @ g_to_gln) @ veronese_rep>: b in Basis(g)];
