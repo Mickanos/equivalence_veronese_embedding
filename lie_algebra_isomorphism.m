@@ -156,24 +156,25 @@ BaseChangeAndSplitCartan := function(L)
 end function;
 
 AdjustStructureConstants := function(L, iso)
-	k := BaseField(L);
-	NL := Codomain(iso);
-	K := BaseRing(NL);
+	MA := Codomain(iso);
+	K := BaseRing(MA);
+	k := BaseRing(L);
 	d := Degree(K, k);
-	_, n := IsSquare(Dimension(L));
-	MP := PolynomialRing(k, d);
-	R := FieldOfFractions(MP);
-	RL, rest := MyRestrictionOfScalars(NL, k);
-	RLpol, base_change := ChangeRing(RL, R);
-	I := NL!(Eltseq(IdentityMatrix(K, n)));
-	Is := [R.i * ((t*I) @ rest @ base_change) : i -> t in Basis(K, k)];
-	RLpol_changed := ChangeBasis(RLpol, [b + &+Is : b in Basis(RLpol)]);
-	eqs := &cat[Eltseq(BasisProduct(RLpol_changed, i, j))[[ell : ell in [1..Dimension(RL)] | ell mod d ne 1]]
-    		: i, j in [1..Dimension(RL)] | i mod d eq 1 and j mod d eq 1];
-	I := ideal<MP | [Numerator(e) : e in eqs]>;
+	R := PolynomialRing(K, d);
+	Rk := PolynomialRing(k, d);
+	SeqSet := Parent([Rk.1]);
+	lambda := &+[b * R.i : i-> b in Basis(K, k)];
+	matrices := [ChangeRing(b @ iso, R) : b in Basis(L)];
+	char_polys := [CharacteristicPolynomial(M): M in matrices];
+	t := Parent(char_polys[1]).1;
+	evals := [Evaluate(P, t - lambda * Trace(matrices[i])): i -> P in char_polys];
+	coefficients := &cat[Coefficients(e): e in evals];
+	polys_k := &cat[SeqSet | Polyseq(P, k)[2..d] : P in coefficients];
+	I := ideal<Rk | polys_k>;
 	assert IsZeroDimensional(I);
 	lambda := K!(Variety(I)[1]);
-	return ChangeBasis(NL, [b + lambda * I : b in Basis(NL)]);
+	adjustment := map<MA -> MA | M :-> M + lambda * Trace(M) * One(MA)>;
+	return iso * adjustment;
 end function;
 	
 //Given a Lie algebra isomorphic to some gl_n(k), computes an enveloping
@@ -190,10 +191,11 @@ EnvelopingAlgebra := function(L)
   if K eq BaseRing(L) then
   	return true, iso;
   end if;
-  _, phi := Algebra(Ma);
-  iso := iso * phi;
-  _, adjustment := AdjustStructureConstants(L, iso);
-  return false, iso * adjustment;
+  print "here!";
+  iso := AdjustStructureConstants(L, iso);
+  A, phi := Algebra(Ma);
+  final_iso := hom<L -> A | [b @ iso @ phi: b in Basis[L]]>;
+  return false, final_iso;
 end function;
 
 //Outputs an isomorphism from the Lie algebra L to sln.

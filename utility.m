@@ -184,3 +184,18 @@ MyRestrictionOfScalars := function(A, k)
 	res := map<A -> RA | a :-> RA!RoS_Sequence(Eltseq(a), k)>;
 	return RA, res;
 end function;
+
+//Input: A polynomial P over some field K, with subfield k.
+//Output: A sequence of polynomials over k which combine into P with coefficients the basis of K over k.
+Polyseq := function(P, k)
+	d := Degree(BaseRing(Parent(P)), k);
+	R := ChangeRing(Parent(P), k);
+	if IsZero(P) then
+		return [Zero(R) : _ in [1..d]];
+	end if;
+	coeffs, monomials := CoefficientsAndMonomials(P);
+	coeffs_of_coeffs := [Eltseq(c, k): c in coeffs];
+	polys_k := [R | ChangeRing(&+[c[i] * monomials[j]
+		: j->c in coeffs_of_coeffs], k): i in [1..d]];
+	return polys_k;
+end function;
