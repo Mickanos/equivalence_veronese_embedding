@@ -171,8 +171,8 @@ AdjustStructureConstants := function(L, iso)
 	coefficients := &cat[Coefficients(e): e in evals];
 	polys_k := &cat[SeqSet | Polyseq(P, k)[2..d] : P in coefficients];
 	I := ideal<Rk | polys_k>;
-	assert IsZeroDimensional(I);
-	lambda := K!(Variety(I)[1]);
+	points := [K!TupleToSequence(x): x in Variety(I)];
+	lambda := [p : p in points | Degree(MA)*p ne -1][1];
 	adjustment := map<MA -> MA | M :-> M + lambda * Trace(M) * One(MA)>;
 	return iso * adjustment;
 end function;
@@ -191,10 +191,12 @@ EnvelopingAlgebra := function(L)
   if K eq BaseRing(L) then
   	return true, iso;
   end if;
-  print "here!";
   iso := AdjustStructureConstants(L, iso);
-  A, phi := Algebra(Ma);
-  final_iso := hom<L -> A | [b @ iso @ phi: b in Basis[L]]>;
+  MaAss, phi := Algebra(Ma);
+  A := sub<MaAss | [b @ iso @ phi: b in Basis(L)]>;
+  A, psi := ChangeBasis(A, [b @ iso @ phi: b in Basis(L)]);
+  B := DescendAssociativeAlgebra(A, BaseRing(L));
+  final_iso := hom<L -> B | Basis(B)>;
   return false, final_iso;
 end function;
 
