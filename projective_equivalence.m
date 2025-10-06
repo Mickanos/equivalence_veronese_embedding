@@ -1,9 +1,9 @@
-
 // *******************************
 // ** COMPUTING THE LIE ALGEBRA **
 // *******************************
 
 ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
+  eqs := [QuadricToMatrix(e): e in eqs];
   F := BaseRing(eqs[1]);
   n := Nrows(eqs[1]);
   AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;
@@ -61,13 +61,20 @@ VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
     end if;
     M_r := Codomain(g_to_gln);
     M_N := Codomain(natural_rep);
-    c := Basis(Center(g))[1];
-    c /:= (c @ g_to_gln)[1,1];
-    t := (c @ natural_rep)[1,1];
-    g_to_gln := g_to_gln * map< M_r -> M_r | a :-> a + (d-t) * Trace(a) * One(M_r)>;
+    tau := map< M_r -> M_r | x :-> -Transpose(x)>;
+    if not IsZero(k!n) and not IsZero(k!d) then
+	    c := Basis(Center(g))[1];
+	    a := (c @ g_to_gln)[1,1];
+	    b := (c @ natural_rep)[1,1];
+	    h_t := map< M_r -> M_r | x :-> x + (b/(a*d) - 1)/n * Trace(x) * One(M_r)>;
+	    h_min_t := map< M_r -> M_r | x :-> x + (-(b/(a*d) + 1)/n) * Trace(x) * One(M_r)>;
+    else
+    h_t := map< M_r -> M_r | x :-> x>;
+    h_min_t := map< M_r -> M_r | x :-> x>;
+    end if;
     return [<Matrix(b @ natural_rep),
-        (b @ g_to_gln) @ veronese_rep ,
-        Transpose(-b @ g_to_gln) @ veronese_rep>: b in Basis(g)];
+        b @ g_to_gln @ h_t @ veronese_rep ,
+        b @ g_to_gln @ h_min_t @ tau @ veronese_rep>: b in Basis(g)];
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.
@@ -97,8 +104,8 @@ LieAlgebraRepresentationIsomorphism := function(triples: verbose := false)
                 printf "The matrix \n%o\n is sent to\n%o\n", t[1], t[3];
             end for;
         end if;
-        system := Matrix([&cat[Eltseq(p[1]*e - e*p[3]): p in triples] :
-            e in Basis(Mat)]);
+    	system := Matrix([&cat[Eltseq(p[1]*e - e*p[3]): p in triples] :
+	    e in Basis(Mat)]);
         K := Basis(Nullspace(system));
     end if;
     k := BaseRing(triples[1][1]);
@@ -115,8 +122,7 @@ end function;
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
 EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
-        Quads := [QuadricToMatrix(e) : e in eqs];
-        g, natural_rep := ComputeLieAlgebra(Quads, n: f := f, verbose := verbose);
+        g, natural_rep := ComputeLieAlgebra(eqs , n: f := f, verbose := verbose);
     lie_isom := VeroneseLieAlgebraIsom(g,
         natural_rep,
         n,

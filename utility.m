@@ -213,21 +213,3 @@ DescendAssociativeAlgebra := function(A, k)
 	Q := [[ChangeUniverse(Eltseq(BasisProduct(A, i, j)), k): j in [1..d]]: i in [1..d]];
 	return AssociativeAlgebra<k, d | Q : Check := false>;
 end function;
-
-CheckTriples := function(triples)
-	k := BaseRing(triples[1][1]);
-	n := NumberOfRows(triples[1][1]);
-	MA := MatrixLieAlgebra(k, n);
-	L1 := LieAlgebra(sub<MA | [t[1]: t in triples]>);
-	L2 := LieAlgebra(sub<MA | [t[2]: t in triples]>);
-	L3 := LieAlgebra(sub<MA | [t[3]: t in triples]>);
-	hom1 := hom<L1 -> L2 | Basis(L2)>;
-	hom2 := hom<L1 -> L3 | Basis(L3)>;
-	return IsLieHom(hom1, L1), IsLieHom(hom2, L1);
-end function;
-
-IsInjective := function(f)
-	V := Domain(f);
-	mat := Matrix([Eltseq(b @ f): b in Basis(V)]);
-	return Rank(mat) eq Dimension(V);
-end function;
