@@ -31,7 +31,8 @@ ComputeLieAlgebra := function(eqs, r : f := 1, verbose := false)
   end if;
   ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
   L, phi := LieAlgebra(ALie);
-  return L, Inverse(phi);
+natural_rep := map<L -> MatrixAlgebra(F, n) | a :-> Matrix(a @@ phi)>;
+  return L, natural_rep;
 end function;
 
 //Given the Lie algebra of a projective variety, find an isomorphism
@@ -59,22 +60,19 @@ g_to_gln := SplitGln(g);
 			print (b @ (g_to_gln * veronese_rep));
 		end for;
 	end if;
-	M_r := Codomain(g_to_gln);
-	tau := map< M_r -> M_r | x :-> -Transpose(x)>;
-	if not IsZero(k!n) then
-		I := One(M_r);
-		I_nat := (I @@ g_to_gln @ natural_rep);
-		b := (I_nat @@ veronese_rep)[1,1];
-		h_t := map<M_r -> M_r | a :-> a + (b-1)/n * Trace(a) * I>;
-		h_t_tau := map<M_r -> M_r | a :-> a - (b+1)/n * Trace(a) * I>;
-	else
-		h_t := map<M_r -> M_r | a :-> a>;
-		h_t_tau := h_t;
+	e := ElementaryMatrix(k, n, n, 1, 1);
+	ev_nat := SetToSequence(Eigenvalues(e @@ g_to_gln @ natural_rep));
+	ev_vero := SetToSequence(Eigenvalues(e @ veronese_rep));
+	ev_1 := [a[1] : a in ev_nat | a[2] eq ev_vero[1][2]][1];
+	ev_2 := [a[1] : a in ev_nat | a[2] eq ev_vero[2][2]][1];
+	a := (ev_vero[2][1] - ev_vero[1][1])/(ev_2 - ev_1);
+	b := ev_vero[1][1] - a * ev_1;
+	c := (IdentityMatrix(k, n) @ veronese_rep)[1,1];
+	iso := h_isom(k, n, -b/c);
+	if not IsOne(a) then
+		iso := tau_isom(k, n) * iso;
 	end if;
-	c := Basis(Center(g))[1];
-        return [<Matrix(b @ natural_rep),
-		Matrix(b @ g_to_gln @ h_t @ veronese_rep) ,
-		Matrix(b @ g_to_gln @ tau @ h_t_tau @ veronese_rep)>: b in Basis(g)];
+        return natural_rep, g_to_gln * iso * veronese_rep;
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.
@@ -85,32 +83,17 @@ end function;
 //Outputs an isomorphism of the natural representation. That is,
 //an invertible matrix T in gl_n such that the second Lie algebra is the
 //conjugate of the first by T.
-LieAlgebraRepresentationIsomorphism := function(triples: verbose := false)
-    Mat := Parent(triples[1][1]);
-    system := Matrix([&cat[Eltseq(p[1]*e - e*p[2]): p in triples] :
+LieAlgebraRepresentationIsomorphism := function(rep_1, rep_2: verbose := false)
+    Mat := Codomain(rep_1);
+    g := Domain(rep_1);
+    system := Matrix([&cat[Eltseq((b @ rep_1)*e - e*(b @ rep_2)): b in Basis(g)] :
         e in Basis(Mat)]);
-    target_rank := Dimension(Mat) - 1;
     if verbose then
         print "We compute an isomorphism of representations.";
     end if;
-    if Rank(system) eq target_rank then
-        K := Basis(Nullspace(system));
-    else
-        if verbose then
-            print "We failed to find one. We must precompose our isomorphism";
-            print "of Lie algebras with the outer automorphism of sl_n.";
-            print "We get the following mapping:";
-            for t in triples do
-                printf "The matrix \n%o\n is sent to\n%o\n", t[1], t[3];
-            end for;
-        end if;
-    	system := Matrix([&cat[Eltseq(p[1]*e - e*p[3]): p in triples] :
-	    e in Basis(Mat)]);
-        K := Basis(Nullspace(system));
-    end if;
-    k := BaseRing(triples[1][1]);
-    r := NumberOfRows(triples[1][1]);
-    T := Matrix(k,r,r,Eltseq(K[1]));
+    k := BaseRing(g);
+    r := Degree(Mat);
+    T := Matrix(k,r,r,Eltseq(Basis(Nullspace(system))[1]));
     if verbose then
         print "We solve the system of linear equations and find that the ";
         printf "matrix\n%o\n is a projective equivalence of varieties.\n", T;
@@ -123,12 +106,12 @@ end function;
 //Equivalence to the Veronese embedding of degree d with n variables.
 EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
         g, natural_rep := ComputeLieAlgebra(eqs , n: f := f, verbose := verbose);
-    lie_isom := VeroneseLieAlgebraIsom(g,
+    	rep_1, rep_2 := VeroneseLieAlgebraIsom(g,
         natural_rep,
         n,
         d :
         verbose := verbose);
-    return LieAlgebraRepresentationIsomorphism(lie_isom: verbose := verbose);
+    return LieAlgebraRepresentationIsomorphism(rep_1, rep_2: verbose := verbose);
 end function;
 
 //The same as above, but but assuming that the Lie algebra is already given.

@@ -154,8 +154,8 @@ end function;
 //Computes the Lie algebra of the Veronese embedding of degree d (with n vars).
 //Note that it is a homomorphism of Lie algebras. However, we output a map
 // between Matrix algebras for practical reasons.
-/*
-LieAlgebraVeroneseEmbedding := function(k, n, d)
+
+LieAlgebraVeroneseEmbeddingOld := function(k, n, d)
     R := PolynomialRing(k, n);
     mons := SetToSequence(MonomialsOfDegree(R, d));
     op := [[map<R -> R | p :-> R.j * Derivative(p,i)>: j in [1..n]]:
@@ -169,7 +169,6 @@ LieAlgebraVeroneseEmbedding := function(k, n, d)
     Mr := MatrixAlgebra(k, #mons);
     return map< Mn -> Mr | M :-> &+[M[i,j] * Mats[i][j]: i,j in [1..n]]>, mons;
 end function;
-*/
 
 forward ComputeLieAlgebra;
 forward SplitGln;
@@ -231,4 +230,18 @@ end function;
 //Returns the list of values taken by an associative array. Now implemented in Magma, left for retro-compatibility.
 AppearsIn := function(A, v)
 	return &or[A[k] eq v : k in Keys(A)];
+end function;
+
+IdentityMap :=function(S)
+	return map<S -> S | x :-> x>;
+end function;
+
+tau_isom := function(k, n)
+	Ma := MatrixAlgebra(k, n);
+	return map<Ma -> Ma | a :-> Transpose(-a)>;
+end function;
+
+h_isom := function(k, n, lambda)
+	Ma := MatrixAlgebra(k, n);
+	return map<Ma -> Ma | a :-> a + lambda * Trace(a) * One(Ma)>;
 end function;
