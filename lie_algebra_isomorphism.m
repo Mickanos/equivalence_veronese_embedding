@@ -50,12 +50,21 @@ IndexRoots := function(roots)
 	//The loop invariant is that at the start of iteration i, all the roots of the 
 	//form Phi_{kl} such that k < l <= i are properly indexed in res.
 	for i in [2..n-1] do
-		res[<i,i+1>] := [r : r in roots | res[<1,i>] + r in roots and not AppearsIn(res, r)][1];
+		if i eq 2 then
+			res[<i,i+1>] := [r : r in roots
+			| res[<1,i>] + r in roots and not AppearsIn(res, r)][1];
+		else
+			res[<i,i+1>] := [r : r in roots
+				| res[<1,i>] + r in roots 
+				and not res[<1,2>] + r in roots 
+				and not AppearsIn(res, r)][1];
+		end if;
 		res[<1,i+1>] := res[<1,i>] + res[<i,i+1>];
 		res[<i+1,i>] := -res[<i,i+1>];
 		res[<i+1,1>] := -res[<1,i+1>];
 		for j in [2..i-1] do
 			res[<j,i+1>] := res[<1, i+1>] - res[<1,j>];
+			assert res[<j, i+1>] in roots;
 			res[<i+1,j>] := -res[<j,i+1>];
 		end for;
 	end for;

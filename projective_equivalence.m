@@ -72,11 +72,6 @@ g_to_gln := SplitGln(g);
 		h_t_tau := h_t;
 	end if;
 	c := Basis(Center(g))[1];
-	/*
-	print c @ natural_rep;
-	print c @ g_to_gln @ h_t @ veronese_rep;
-	print c @ g_to_gln @ tau @ h_t_tau @ veronese_rep;
-	*/
         return [<Matrix(b @ natural_rep),
 		Matrix(b @ g_to_gln @ h_t @ veronese_rep) ,
 		Matrix(b @ g_to_gln @ tau @ h_t_tau @ veronese_rep)>: b in Basis(g)];
