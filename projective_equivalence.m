@@ -41,40 +41,39 @@ end function;
 //The third element of the tuple is the same equivalence precomposed
 //by negative transpose in sln.
 VeroneseLieAlgebraIsom := function(g, natural_rep, n, d : verbose := false)
-    k := BaseRing(g);
-    g_to_gln := SplitGln(g);
-    if verbose then
-        print "We have computed a splitting of the Lie algebra.";
-        for b in Basis(g) do
-            printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
-            print (b @ g_to_gln);
-        end for;
-    end if;
-    veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
-    if verbose then
-        print "Now, composing the previous map with the Veronese embedding, ";
-        print "we get the following correspondences:";
-        for b in Basis(g) do
-            printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
-            print (b @ (g_to_gln * veronese_rep));
-        end for;
-    end if;
-    M_r := Codomain(g_to_gln);
-    M_N := Codomain(natural_rep);
-    tau := map< M_r -> M_r | x :-> -Transpose(x)>;
-    if not IsZero(k!n) and not IsZero(k!d) then
-	    c := Basis(Center(g))[1];
-	    a := (c @ g_to_gln)[1,1];
-	    b := (c @ natural_rep)[1,1];
-	    h_t := map< M_r -> M_r | x :-> x + (b/(a*d) - 1)/n * Trace(x) * One(M_r)>;
-	    h_min_t := map< M_r -> M_r | x :-> x + (-(b/(a*d) + 1)/n) * Trace(x) * One(M_r)>;
-    else
-    h_t := map< M_r -> M_r | x :-> x>;
-    h_min_t := map< M_r -> M_r | x :-> x>;
-    end if;
-    return [<Matrix(b @ natural_rep),
-        b @ g_to_gln @ h_t @ veronese_rep ,
-        b @ g_to_gln @ h_min_t @ tau @ veronese_rep>: b in Basis(g)];
+k := BaseRing(g);
+g_to_gln := SplitGln(g);
+	if verbose then
+		print "We have computed a splitting of the Lie algebra.";
+		for b in Basis(g) do
+			printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
+			print (b @ g_to_gln);
+		end for;
+	end if;
+	veronese_rep := LieAlgebraVeroneseEmbedding(k, n, d);
+	if verbose then
+		print "Now, composing the previous map with the Veronese embedding, ";
+		print "we get the following correspondences:";
+		for b in Basis(g) do
+			printf "The matrix \n%o\n is sent to\n", b @ natural_rep;
+			print (b @ (g_to_gln * veronese_rep));
+		end for;
+	end if;
+	M_r := Codomain(g_to_gln);
+	tau := map< M_r -> M_r | x :-> -Transpose(x)>;
+	if not IsZero(k!n) then
+		I := One(M_r);
+		I_nat := (I @@ g_to_gln @ natural_rep);
+		b := (I_nat @@ veronese_rep)[1,1];
+		h_t := map<M_r -> M_r | a :-> a + (b-1)/n * Trace(a) * I>;
+		h_t_tau := map<M_r -> M_r | a :-> a + (b+1)/n * Trace(a) * I>;
+	else
+		h_t := map<M_r -> M_r | a :-> a>;
+		h_t_tau := h_t;
+	end if;
+        return [<Matrix(b @ natural_rep),
+		Matrix(b @ g_to_gln @ h_t @ veronese_rep) ,
+		Matrix(b @ g_to_gln @ tau @ h_t_tau @ veronese_rep)>: b in Basis(g)];
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.

@@ -42,7 +42,6 @@ Eigenbasis := function(L, spaces, roots)
 		: i -> space in spaces];
 end function;
 
-//This implementation is not terribly efficient but that part should be very fast anyway.
 IndexRoots := function(roots)
 	n := Degree(roots[1]);
 	res := AssociativeArray();
@@ -51,12 +50,12 @@ IndexRoots := function(roots)
 	//The loop invariant is that at the start of iteration i, all the roots of the 
 	//form Phi_{kl} such that k < l <= i are properly indexed in res.
 	for i in [2..n-1] do
-		res[<i,i+1>] := [r : r in roots | res[<1,i>] + r in roots][1];
+		res[<i,i+1>] := [r : r in roots | res[<1,i>] + r in roots and not AppearsIn(res, r)][1];
 		res[<1,i+1>] := res[<1,i>] + res[<i,i+1>];
 		res[<i+1,i>] := -res[<i,i+1>];
 		res[<i+1,1>] := -res[<1,i+1>];
 		for j in [2..i-1] do
-			res[<j,i+1>] := [r : r in roots | r + res[<i,j>] eq res[<1,i+1>]][1];
+			res[<j,i+1>] := res[<1, i+1>] - res[<1,j>];
 			res[<i+1,j>] := -res[<j,i+1>];
 		end for;
 	end for;
@@ -116,7 +115,7 @@ GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
 		N := (n-1)*(n-2);
 		target := Vector([1] cat [0 : _ in [1..N]] cat Eltseq((total_space!res[<1,1>]) @ proj));
 		sol := Solution(HorizontalJoin(mat_1, mat_2), target);
-		res[<k, k>] := H!(Eltseq(sol));
+		res[<k, k>] := L!H!(Eltseq(sol));
 	end for;
 
 	//Some rescaling is needed.
@@ -187,10 +186,13 @@ EnvelopingAlgebra := function(L)
   _, n := IsSquare(Dimension(L));
   iso := bc_map * Liso;
   Ma := MatrixAlgebra(K, n);
-  iso := map<L -> Ma | b :-> Ma!Eltseq(b @ iso)>;
   if K eq BaseRing(L) then
+  	M := Matrix([Eltseq(b @ iso): b in Basis(L)]);
+	iM := M^-1;
+	iso := map< L -> Ma | x :-> Ma!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
   	return true, iso;
   end if;
+  iso := map<L -> Ma | b :-> Ma!Eltseq(b @ iso)>;
   iso := AdjustStructureConstants(L, iso);
   MaAss, phi := Algebra(Ma);
   A := sub<MaAss | [b @ iso @ phi: b in Basis(L)]>;
@@ -210,5 +212,8 @@ SplitGln := function(L)
 	end if;
 	A := Codomain(phi);
 	psi := SplitMatrixAlgebra(A);
-	return phi * psi;
+	M := Matrix([Vector(b @ phi @ psi): b in Basis(L)]);
+	iM := M^-1;
+	MA := Codomain(psi);
+	return map<L -> Codomain(psi) | x :-> MA!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
 end function;

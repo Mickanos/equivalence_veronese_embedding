@@ -154,6 +154,7 @@ end function;
 //Computes the Lie algebra of the Veronese embedding of degree d (with n vars).
 //Note that it is a homomorphism of Lie algebras. However, we output a map
 // between Matrix algebras for practical reasons.
+/*
 LieAlgebraVeroneseEmbedding := function(k, n, d)
     R := PolynomialRing(k, n);
     mons := SetToSequence(MonomialsOfDegree(R, d));
@@ -167,6 +168,19 @@ LieAlgebraVeroneseEmbedding := function(k, n, d)
     Mn := MatrixAlgebra(k, n);
     Mr := MatrixAlgebra(k, #mons);
     return map< Mn -> Mr | M :-> &+[M[i,j] * Mats[i][j]: i,j in [1..n]]>, mons;
+end function;
+*/
+
+forward ComputeLieAlgebra;
+forward SplitGln;
+
+LieAlgebraVeroneseEmbedding := function(k, n, d: f := 1)
+	r := NumberOfMonomials(n, d);
+	eqs := GetVeroneseEquations(n, d);
+	ChangeUniverse(~eqs, PolynomialRing(k, r));
+	g, nat := ComputeLieAlgebra(eqs, n: f := f);
+	g_to_gln := SplitGln(g);
+	return Inverse(g_to_gln) * nat;
 end function;
 
 RoS_Sequence := function(v, k)
@@ -212,4 +226,9 @@ DescendAssociativeAlgebra := function(A, k)
 	d := Dimension(A);
 	Q := [[ChangeUniverse(Eltseq(BasisProduct(A, i, j)), k): j in [1..d]]: i in [1..d]];
 	return AssociativeAlgebra<k, d | Q : Check := false>;
+end function;
+
+//Returns the list of values taken by an associative array. Now implemented in Magma, left for retro-compatibility.
+AppearsIn := function(A, v)
+	return &or[A[k] eq v : k in Keys(A)];
 end function;
