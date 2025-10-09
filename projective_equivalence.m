@@ -35,6 +35,37 @@ natural_rep := map<L -> MatrixAlgebra(F, n) | a :-> Matrix(a @@ phi)>;
   return L, natural_rep;
 end function;
 
+ComputeLieAlgebraHomogeneous := function(pols)
+  // algorithm for computing the Lie algebra of a scheme defined in terms
+  // of homogeneous polynomials, all having the same degree
+  // (this should also work for the quadratic case, but should be slower
+  //  because it involves more polynomial arithmetic)
+  deg := Degree(pols[1]);
+  R := Parent(pols[1]);
+  F := BaseRing(R);
+  n := Rank(R);
+  mons := MonomialsOfDegree(R, deg);
+  N := #mons;
+  V := VectorSpace(F, N);
+  W := sub<V | [PolToVector(f, mons) : f in pols] >;
+  U, Quo := quo<V | W>;
+  r := Dimension(U);
+  basis := Basis(MatrixAlgebra(F, n));
+  M := [];
+  for b in basis do
+    for f in pols do
+      M cat:= Eltseq(Quo(PolToVector(&+[&+[b[i][j]*R.j*Derivative(f, i) : j in [1..n]] : i in [1..n]], mons)));
+    end for;
+  end for;
+  M := Matrix(n^2, #pols*r, M);
+  B := Basis(Nullspace(M));
+  MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
+  ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
+  L, phi := LieAlgebra(ALie);
+  return L, Inverse(phi);
+end function;
+
+
 //Given the Lie algebra of a projective variety, find an isomorphism
 //to the Lie algebra of the Veronese embedding.
 //Outputs a list of triples of equivalent basis elements of the Lie algebras
@@ -105,7 +136,12 @@ end function;
 //Given quadric equations for a projective variety, computes a projective
 //Equivalence to the Veronese embedding of degree d with n variables.
 EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
-        g, natural_rep := ComputeLieAlgebra(eqs , n: f := f, verbose := verbose);
+	k := BaseRing(Parent(eqs[1]));
+	if IsZero(k!2) then
+		g, natural_rep := ComputeLieAlgebraHomogeneous(eqs);
+	else
+		g, natural_rep := ComputeLieAlgebra(eqs , n: f := f, verbose := verbose);
+	end if;
     	rep_1, rep_2 := VeroneseLieAlgebraIsom(g,
         natural_rep,
         n,
