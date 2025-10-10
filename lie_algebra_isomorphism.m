@@ -26,17 +26,13 @@ Char2SpaceBreak := function(L, spaces, roots, i)
 	mid := a[1,1]*b[2,2] + a[2,2]*b[1,1] - a[1,2]*b[2,1] - a[2,1]*b[1,2];
 	da := Determinant(a);
 	db := Determinant(b);
-	R<x,y> := PolynomialRing(F,2);
-	I := ideal<R | [da * x^2 + mid * x*y + db * y^2]>;
-	/*
+	R := PolynomialRing(F);
 	if IsZero(da) then
 		return [L!ba[1], IsZero(db) select L!ba[2] else L!(ba[1]) - mid/db * ba[2]];
 	end if;
-	zeros := [t[1] : t in Roots(R![da, mid, db])];
-	*/
-	V := [<z[1],z[2]> : z in Variety(I) | IsOne(z[1]) or (IsZero(z[1]) and IsOne(z[2]))];
-	assert #V eq 2;
-	return [L!(z[1]*ba[1] + z[2]*ba[2]) : z in V];
+	zeros := [t[1] : t in Roots(R![db, mid, da])];
+	assert #zeros eq 2;
+	return [L!(z*ba[1] + ba[2]) : z in zeros];
 end function;
 
 
@@ -183,9 +179,10 @@ AdjustStructureConstants := function(L, iso)
 	evals := [Evaluate(P, t - lambda * Trace(matrices[i])): i -> P in char_polys];
 	coefficients := &cat[Coefficients(e): e in evals];
 	polys_k := &cat[SeqSet | Polyseq(P, k)[2..d] : P in coefficients];
-	I := ideal<Rk | polys_k>;
-	points := [K!TupleToSequence(x): x in Variety(I)];
-	lambda := [p : p in points | Degree(MA)*p ne -1][1];
+	X := Spec(quo<Rk | polys_k>);
+	repeat
+		lambda := K!Eltseq(Random(X(k)));
+	until Degree(MA) * lambda ne -1;
 	adjustment := map<MA -> MA | M :-> M + lambda * Trace(M) * One(MA)>;
 	return iso * adjustment;
 end function;
