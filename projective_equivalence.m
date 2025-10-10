@@ -47,14 +47,14 @@ ComputeLieAlgebraHomogeneous := function(pols)
   mons := MonomialsOfDegree(R, deg);
   N := #mons;
   V := VectorSpace(F, N);
-  W := sub<V | [PolToVector(f, mons) : f in pols] >;
+  W := sub<V | [PolyToVector(f, mons) : f in pols] >;
   U, Quo := quo<V | W>;
   r := Dimension(U);
   basis := Basis(MatrixAlgebra(F, n));
   M := [];
   for b in basis do
     for f in pols do
-      M cat:= Eltseq(Quo(PolToVector(&+[&+[b[i][j]*R.j*Derivative(f, i) : j in [1..n]] : i in [1..n]], mons)));
+      M cat:= Eltseq(Quo(PolyToVector(&+[&+[b[i][j]*R.j*Derivative(f, i) : j in [1..n]] : i in [1..n]], mons)));
     end for;
   end for;
   M := Matrix(n^2, #pols*r, M);
@@ -62,7 +62,8 @@ ComputeLieAlgebraHomogeneous := function(pols)
   MatBasis := [Matrix(F,n,n,Eltseq(b)): b in B];
   ALie := sub<MatrixLieAlgebra(F, n) | MatBasis>;
   L, phi := LieAlgebra(ALie);
-  return L, Inverse(phi);
+  natural_rep := map<L -> MatrixAlgebra(F, n) | a :-> Matrix(a @@ phi)>;
+  return L, natural_rep;
 end function;
 
 
@@ -103,7 +104,11 @@ g_to_gln := SplitGln(g);
 	if not IsOne(a) then
 		iso := tau_isom(k, n) * iso;
 	end if;
-        return natural_rep, g_to_gln * iso * veronese_rep;
+	reps := [g_to_gln * iso * veronese_rep];
+	if IsZero(k!2) then
+		Append(~reps, g_to_gln * iso * tau_isom(k, n) * veronese_rep);
+	end if;
+	return natural_rep, reps;
 end function;
 
 //Takes two isomorphic Lie algebras embedded in gl_n.
@@ -114,17 +119,22 @@ end function;
 //Outputs an isomorphism of the natural representation. That is,
 //an invertible matrix T in gl_n such that the second Lie algebra is the
 //conjugate of the first by T.
-LieAlgebraRepresentationIsomorphism := function(rep_1, rep_2: verbose := false)
-    Mat := Codomain(rep_1);
+LieAlgebraRepresentationIsomorphism := function(rep_1, reps : verbose := false)
+    N := Degree(Codomain(rep_1));
     g := Domain(rep_1);
-    system := Matrix([&cat[Eltseq((b @ rep_1)*e - e*(b @ rep_2)): b in Basis(g)] :
-        e in Basis(Mat)]);
+    k := BaseField(g);
+    Mat := MatrixAlgebra(k, N);
+    for rep_2 in reps do
+	    system := Matrix([&cat[Eltseq((b @ rep_1)*e - e*(b @ rep_2)): b in Basis(g)] :
+		e in Basis(Mat)]);
+	    if Rank(system) ne NumberOfRows(system) then
+	    	break;
+	    end if;
+    end for;
     if verbose then
         print "We compute an isomorphism of representations.";
     end if;
-    k := BaseRing(g);
-    r := Degree(Mat);
-    T := Matrix(k,r,r,Eltseq(Basis(Nullspace(system))[1]));
+    T := Mat!Eltseq(Basis(Nullspace(system))[1]);
     if verbose then
         print "We solve the system of linear equations and find that the ";
         printf "matrix\n%o\n is a projective equivalence of varieties.\n", T;
@@ -142,12 +152,12 @@ EquivalenceToVeronese := function(n, d, eqs : f := 1, verbose := false)
 	else
 		g, natural_rep := ComputeLieAlgebra(eqs , n: f := f, verbose := verbose);
 	end if;
-    	rep_1, rep_2 := VeroneseLieAlgebraIsom(g,
-        natural_rep,
-        n,
-        d :
-        verbose := verbose);
-    return LieAlgebraRepresentationIsomorphism(rep_1, rep_2: verbose := verbose);
+	rep_1, reps := VeroneseLieAlgebraIsom(g,
+		natural_rep,
+		n,
+		d :
+		verbose := verbose);
+	return LieAlgebraRepresentationIsomorphism(rep_1, reps : verbose := verbose);
 end function;
 
 //The same as above, but but assuming that the Lie algebra is already given.

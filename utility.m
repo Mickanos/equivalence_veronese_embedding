@@ -171,13 +171,18 @@ LieAlgebraVeroneseEmbeddingOld := function(k, n, d)
 end function;
 
 forward ComputeLieAlgebra;
+forward ComputeLieAlgebraHomogeneous;
 forward SplitGln;
 
 LieAlgebraVeroneseEmbedding := function(k, n, d: f := 1)
 	r := NumberOfMonomials(n, d);
 	eqs := GetVeroneseEquations(n, d);
 	ChangeUniverse(~eqs, PolynomialRing(k, r));
-	g, nat := ComputeLieAlgebra(eqs, n: f := f);
+	if IsZero(k!2) then
+		g, nat := ComputeLieAlgebraHomogeneous(eqs);
+	else
+		g, nat := ComputeLieAlgebra(eqs, n: f := f);
+	end if;
 	g_to_gln := SplitGln(g);
 	return Inverse(g_to_gln) * nat;
 end function;

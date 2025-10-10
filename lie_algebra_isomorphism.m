@@ -11,7 +11,6 @@ end function;
 
 Char2SpaceBreak := function(L, spaces, roots, i)
 	F := BaseRing(L);
-	R := PolynomialRing(F);
 	root := roots[i];
 	space := spaces[i];
 	j := Index([j ne i and (r + root) in roots : j -> r in roots], true);
@@ -27,11 +26,17 @@ Char2SpaceBreak := function(L, spaces, roots, i)
 	mid := a[1,1]*b[2,2] + a[2,2]*b[1,1] - a[1,2]*b[2,1] - a[2,1]*b[1,2];
 	da := Determinant(a);
 	db := Determinant(b);
+	R<x,y> := PolynomialRing(F,2);
+	I := ideal<R | [da * x^2 + mid * x*y + db * y^2]>;
+	/*
 	if IsZero(da) then
 		return [L!ba[1], IsZero(db) select L!ba[2] else L!(ba[1]) - mid/db * ba[2]];
 	end if;
 	zeros := [t[1] : t in Roots(R![da, mid, db])];
-	return [L!(ba[1] + x*ba[2]) : x in zeros];
+	*/
+	V := [<z[1],z[2]> : z in Variety(I) | IsOne(z[1]) or (IsZero(z[1]) and IsOne(z[2]))];
+	assert #V eq 2;
+	return [L!(z[1]*ba[1] + z[2]*ba[2]) : z in V];
 end function;
 
 
