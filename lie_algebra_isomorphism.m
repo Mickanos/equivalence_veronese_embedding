@@ -228,3 +228,14 @@ SplitGln := function(L)
 	MA := Codomain(psi);
 	return map<L -> Codomain(psi) | x :-> MA!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
 end function;
+
+SplitGlnQuotient := function(L)
+	e, lift := nontrivial_central_extension(L);
+	iso := SplitGln(e);
+	k := BaseRing(e);
+	_, n := IsSquare(Dimension(e));
+	ML := MatrixLieAlgebra(k, n);
+	gln_mod_In, proj := quo<ML | Center(ML)>;
+	basis_image := [(ML!(b @ lift @ iso)) @ proj: b in Basis(L)];
+	return hom<L -> gln_mod_In | basis_image>;
+end function;
