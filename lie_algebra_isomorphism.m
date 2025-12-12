@@ -213,9 +213,7 @@ EnvelopingAlgebra := function(L)
   return false, final_iso;
 end function;
 
-//Outputs an isomorphism from the Lie algebra L to sln.
-//Technically, the map just gives images as matrices, not as element of
-//a Lie algebra. This is more convenient for our purposes.
+//Outputs an isomorphism from the Lie algebra L to gln.
 SplitGln := function(L)
 	done, phi := EnvelopingAlgebra(L);
 	if done then
@@ -225,17 +223,21 @@ SplitGln := function(L)
 	psi := SplitMatrixAlgebra(A);
 	M := Matrix([Vector(b @ phi @ psi): b in Basis(L)]);
 	iM := M^-1;
-	MA := Codomain(psi);
-	return map<L -> Codomain(psi) | x :-> MA!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
+	_, n := IsSquare(Dimension(L));
+	gln := MatrixLieAlgebra(BaseField(L), n);
+	return map<L -> gln | x :-> gln!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
 end function;
 
-SplitGlnQuotient := function(L)
-	e, lift := nontrivial_central_extension(L);
+SplitGlnQuotient := function(L, proj)
+	k := BaseRing(L);
+	if IsZero(k!(Dimension(L) + 1)) then
+		e, lift := nontrivial_central_extension(L);
+	else
+		e := DirectSum(L, AbelianLieAlgebra(k, 1));
+		lift := hom<L -> e | Basis(e)[1..Dimension(L)]>;
+	end if;
 	iso := SplitGln(e);
-	k := BaseRing(e);
-	_, n := IsSquare(Dimension(e));
-	ML := MatrixLieAlgebra(k, n);
-	gln_mod_In, proj := quo<ML | Center(ML)>;
-	basis_image := [(ML!(b @ lift @ iso)) @ proj: b in Basis(L)];
+	gln_mod_In := Codomain(proj);
+	basis_image := [b @ lift @ iso @ proj: b in Basis(L)];
 	return hom<L -> gln_mod_In | basis_image>;
 end function;

@@ -44,5 +44,15 @@ nontrivial_central_extension := function(g)
         cat [[[0: _ in [1..d]]: _ in [1..d]]];
     e := LieAlgebra<k, d | Q>;
     lift := hom<g -> e | Basis(e)[1..d-1]>;
-    return e, lift;
+    proj := hom<e -> g | Basis(g) cat [Zero(g)]>;
+    return e, lift, proj;
+end function;
+
+trivial_central_extension := function(g)
+    k := BaseRing(g);
+    d := Dimension(g);
+    e := DirectSum(g, AbelianLieAlgebra(k, 1));
+    lift := hom<g -> e | Basis(e)[1..d]>;
+    proj := hom<e -> g | Basis(g) cat [Zero(g)]>;
+    return e, lift, proj;
 end function;

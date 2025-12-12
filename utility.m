@@ -241,12 +241,28 @@ IdentityMap :=function(S)
 	return map<S -> S | x :-> x>;
 end function;
 
-tau_isom := function(k, n)
-	Ma := MatrixAlgebra(k, n);
-	return map<Ma -> Ma | a :-> Transpose(-a)>;
+GraphAuto := function(gln)
+	return map<gln -> gln | a :-> gln!(Transpose(-Matrix(a)))>;
 end function;
 
-h_isom := function(k, n, lambda)
-	Ma := MatrixAlgebra(k, n);
-	return map<Ma -> Ma | a :-> a + lambda * Trace(a) * One(Ma)>;
+h_isom := function(gln, lambda)
+  assert lambda * Degree(gln) ne -1;
+	return map<gln -> gln | a :-> a + lambda * Trace(a) * One(gln)>;
+end function;
+
+NormalizeLift := function(M)
+  MA := Parent(M);
+  I := One(MA)/Degree(MA);
+  return M - Trace(M) * I;
+end function;
+
+PrepareGlnQuotient := function(k, n : normalise := false)
+  gln := MatrixLieAlgebra(k, n);
+  Mn := MatrixAlgebra(k, n);
+  In := IdentityMatrix(k, n);
+  gln_struc, conv := LieAlgebra(gln);
+  g, proj, partial_lift := QuotientWithPullback(gln_struc, Center(gln_struc));
+  lift := map<g -> Mn | a :-> NormalizeLift(Matrix(b @@ conv)) where b, _ is a @ partial_lift>;
+  proj := conv * proj;
+  return g, proj, lift;
 end function;
