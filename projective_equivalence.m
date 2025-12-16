@@ -3,7 +3,7 @@
 // *******************************
 
 ComputeLieAlgebraBasis := function(eqs, r : f := 1, verbose := false)
-  eqs := [QuadricToMatrix(e): e in eqs];
+  eqs := [SymmetricMatrix(e): e in eqs];
   F := BaseRing(eqs[1]);
   n := Nrows(eqs[1]);
   AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;

@@ -144,32 +144,3 @@ GenTwistedVeroneseLieAlgebra := function(p, n, d)
     L, psi := LieAlgebra(S);
     return L, Inverse(psi), LieBasis;
 end function;
-
-// **********************************************************
-// ** COMPUTE SYMMETRIC MATRIX ATTACHED TO QUADRATIC FORM ***
-// **********************************************************
-
-
-function QuadricToMatrix(Q);
-
-  // RETURNS THE SYMMETRIC MATRIX CORRESPONDING TO A
-  // GIVEN QUADRATIC HOMOGENEOUS FORM OVER A FIELD OF
-  // CHARACTERISTIC NOT TWO
-
-  R := Parent(Q);
-  n := Rank(R);
-  F := BaseRing(R);
-  M := Matrix(F,n,n,[0 : i in [1..n^2]]);
-  for t in Terms(Q) do
-    exps := Exponents(t);
-    coef := Coefficients(t)[1];
-    i := Index(exps,2);
-    if i eq 0 then
-      i := Index(exps,1);
-      j := Index(Remove(exps,i),1) + 1;
-      M[i][j] := coef/2; M[j][i] := coef/2;
-    else M[i][i] := coef;
-    end if;
-  end for;
-  return M;
-end function;
