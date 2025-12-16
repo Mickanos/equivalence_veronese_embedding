@@ -1,3 +1,34 @@
+forward EnvelopingAlgebra;
+forward SplitMatrixAlgebra;
+forward IsomorphismToGlnModIn;
+
+//Outputs an isomorphism from the Lie algebra L to gln.
+IsomorphismToGln := function(L)
+	done, phi := EnvelopingAlgebra(L);
+	if done then
+		return phi;
+	end if;
+	A := Codomain(phi);
+	psi := SplitMatrixAlgebra(A);
+	M := Matrix([Vector(b @ phi @ psi): b in Basis(L)]);
+	iM := M^-1;
+	_, n := IsSquare(Dimension(L));
+	gln := MatrixLieAlgebra(BaseField(L), n);
+	return map<L -> gln | x :-> gln!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
+end function;
+
+IsomorphismToNotGln := function(L, inj_ext, proj_gln)
+	summands := DirectSumDecomposition(L);
+	target := Codomain(inj_ext);
+	one_target := Basis(target)[1];
+	C := [g : g in summands | Dimension(g) eq 1][1];
+	one_domain := L!Basis(C)[1];
+	g := [g : g in summands | Dimension(g) ne 1][1];
+	iso_g := IsomorphismToGlnModIn(g, proj_gln);
+	return hom<L -> target | [<L!a, a @ iso_g @ inj_ext> : a in Basis(g)]
+							cat [<one_domain, one_target>]>;
+end function;
+
 //Compute the roots and corresponding spaces of the adjoint representation of split Cartan subalgebra H on L.
 ComputeRoots := function(L, H)
 	mats := [Matrix(-AdjointMatrix(L, h)) : h in Basis(H)];
@@ -43,6 +74,11 @@ Eigenbasis := function(L, spaces, roots)
 		: i -> space in spaces];
 end function;
 
+//Returns the list of values taken by an associative array. Now implemented in Magma, left for retro-compatibility.
+AppearsIn := function(A, v)
+	return &or[A[k] eq v : k in Keys(A)];
+end function;
+
 IndexRoots := function(roots)
 	n := Degree(roots[1]);
 	res := AssociativeArray();
@@ -70,6 +106,15 @@ IndexRoots := function(roots)
 		end for;
 	end for;
 	return res;
+end function;
+
+//Returns scalar t such that t*a eq b;
+//Throws an error if a and b aren't colinear vectors.
+Colinearity := function(a, b)
+  i := Index([IsZero(c) : c in Eltseq(a)], false);
+  t := b[i]/a[i];
+  assert t*a eq b;
+  return t;
 end function;
 
 GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
@@ -164,6 +209,21 @@ BaseChangeAndSplitCartan := function(L)
   return K, LK, HK, base_change_map;
 end function;
 
+//Input: A polynomial P over some field K, with subfield k.
+//Output: A sequence of polynomials over k which combine into P with coefficients the basis of K over k.
+Polyseq := function(P, k)
+	d := Degree(BaseRing(Parent(P)), k);
+	R := ChangeRing(Parent(P), k);
+	if IsZero(P) then
+		return [Zero(R) : _ in [1..d]];
+	end if;
+	coeffs, monomials := CoefficientsAndMonomials(P);
+	coeffs_of_coeffs := [Eltseq(c, k): c in coeffs];
+	polys_k := [R | ChangeRing(&+[c[i] * monomials[j]
+		: j->c in coeffs_of_coeffs], k): i in [1..d]];
+	return polys_k;
+end function;
+
 AdjustStructureConstants := function(L, iso)
 	MA := Codomain(iso);
 	K := BaseRing(MA);
@@ -187,6 +247,15 @@ AdjustStructureConstants := function(L, iso)
 	return iso * adjustment;
 end function;
 	
+//Descends A to an associative algebra over k.
+//Assumes that the structure constants of A all lie in k,
+//even if A is defined over an extension.
+DescendAssociativeAlgebra := function(A, k)
+	d := Dimension(A);
+	Q := [[ChangeUniverse(Eltseq(BasisProduct(A, i, j)), k): j in [1..d]]: i in [1..d]];
+	return AssociativeAlgebra<k, d | Q : Check := false>;
+end function;
+
 //Given a Lie algebra isomorphic to some gl_n(k), computes an enveloping
 //algebra following the algorithm from Section 2.2 of Pilnikova's thesis.
 //Outputs either true and an isomorphism to M_n(k), or false and an injection of L into M_n(K)
@@ -213,22 +282,7 @@ EnvelopingAlgebra := function(L)
   return false, final_iso;
 end function;
 
-//Outputs an isomorphism from the Lie algebra L to gln.
-SplitGln := function(L)
-	done, phi := EnvelopingAlgebra(L);
-	if done then
-		return phi;
-	end if;
-	A := Codomain(phi);
-	psi := SplitMatrixAlgebra(A);
-	M := Matrix([Vector(b @ phi @ psi): b in Basis(L)]);
-	iM := M^-1;
-	_, n := IsSquare(Dimension(L));
-	gln := MatrixLieAlgebra(BaseField(L), n);
-	return map<L -> gln | x :-> gln!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
-end function;
-
-SplitGlnQuotient := function(L, proj)
+IsomorphismToGlnModIn := function(L, proj)
 	k := BaseRing(L);
 	if IsZero(k!(Dimension(L) + 1)) then
 		e, lift := nontrivial_central_extension(L);
@@ -236,20 +290,17 @@ SplitGlnQuotient := function(L, proj)
 		e := DirectSum(L, AbelianLieAlgebra(k, 1));
 		lift := hom<L -> e | Basis(e)[1..Dimension(L)]>;
 	end if;
-	iso := SplitGln(e);
+	iso := IsomorphismToGln(e);
 	gln_mod_In := Codomain(proj);
 	basis_image := [b @ lift @ iso @ proj: b in Basis(L)];
 	return hom<L -> gln_mod_In | basis_image>;
 end function;
 
-SplitGlnQuotientTriviallyExtended := function(L, inj_ext, proj_gln)
-	summands := DirectSumDecomposition(L);
-	target := Codomain(inj_ext);
-	one_target := Basis(target)[1];
-	C := [g : g in summands | Dimension(g) eq 1][1];
-	one_domain := L!Basis(C)[1];
-	g := [g : g in summands | Dimension(g) ne 1][1];
-	iso_g := SplitGlnQuotient(g, proj_gln);
-	return hom<L -> target | [<L!a, a @ iso_g @ inj_ext> : a in Basis(g)]
-							cat [<one_domain, one_target>]>;
+//Computes an isomorphism to an associative matrix algebra
+SplitMatrixAlgebra := function(A)
+  _, n := IsSquare(Dimension(A));
+  k := BaseField(A);
+  MA := MatrixAlgebra(k, n);
+  I := MinimalRightIdeals(A : Limit := 1)[1];
+  return map<A -> MA | a :-> Matrix([Coordinates(I, e*a): e in Basis(I)])>;
 end function;
