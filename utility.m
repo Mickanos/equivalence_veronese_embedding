@@ -79,9 +79,7 @@ end function;
 //The dollar signs need to be replaced with the letter "R".
 PrecomputeVeroneseEquation := procedure(F, n, d)
   eqs := VeroneseEquations(n, d);
-  s := Sprintf("veronese_%o_%o := function()\n", n, d) cat
-      "\tR := PolynomialRing(IntegerRing(), NumberOfMonomials(" cat 
-      Sprintf("%o, %o));\n \treturn %m;\n", n, d, eqs) cat
+  s := Sprintf("veronese_%o_%o := function()\n \treturn %m;\n", n, d, eqs) cat
       "end function;\n";
   PrintFile(F, s);
 end procedure;
