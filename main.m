@@ -23,7 +23,7 @@ RoutineTest := procedure(p, n, d : f := 1, verbose := false, check := true)
         print eqs_2;
     end if;
     print "Time taken to compute a projective equivalence:";
-    time sol := ComputeProjectiveEquivalence(eqs_1, eqs_2, n + 1);
+    time sol := ComputeProjectiveEquivalence(eqs_1, eqs_2, n + 1, d);
     if check then 
         if CheckProjectiveEquivalence(eqs_1, eqs_2, sol) then
             print "An equivalence was found.";

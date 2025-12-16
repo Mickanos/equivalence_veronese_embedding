@@ -245,9 +245,26 @@ GraphAuto := function(gln)
 	return map<gln -> gln | a :-> gln!(Transpose(-Matrix(a)))>;
 end function;
 
+GraphAutoSpecialCase := function(e, inj_ext, proj_ext, lift_gln, proj_gln)
+  return map<e -> e | a :-> (-Transpose(a @ proj_ext @ lift_gln)) @ proj_gln @ inj_ext - (a - a @ proj_ext @ inj_ext)>;
+end function;
+
 h_isom := function(gln, lambda)
   assert lambda * Degree(gln) ne -1;
 	return map<gln -> gln | a :-> a + lambda * Trace(a) * One(gln)>;
+end function;
+
+h_isom_special_case := function(e, lambda)
+  assert not IsZero(lambda);
+  d := Dimension(e);
+  return hom<e -> e | [lambda * BasisElement(e, 1)] cat Basis(e)[2..d]>;
+end function;
+
+extra_isom_special_case := function(e, lambda)
+  d := Dimension(e);
+  x := BasisElement(e, 2);
+  c := BasisElement(e, 1);
+  return hom<e -> e | [c, x + lambda * c] cat Basis(e)[3..d]>;
 end function;
 
 NormalizeLift := function(M)
@@ -256,13 +273,48 @@ NormalizeLift := function(M)
   return M - Trace(M) * I;
 end function;
 
-PrepareGlnQuotient := function(k, n : normalise := false)
+PrepareGlnQuotient := function(k, n)
   gln := MatrixLieAlgebra(k, n);
   Mn := MatrixAlgebra(k, n);
   In := IdentityMatrix(k, n);
   gln_struc, conv := LieAlgebra(gln);
   g, proj, partial_lift := QuotientWithPullback(gln_struc, Center(gln_struc));
-  lift := map<g -> Mn | a :-> NormalizeLift(Matrix(b @@ conv)) where b, _ is a @ partial_lift>;
   proj := conv * proj;
+  if not IsZero(k!n) then
+    lift := map<g -> Mn | a :-> NormalizeLift(Matrix(b @@ conv)) where b, _ is a @ partial_lift>;
+  else
+    lift := map<g -> Mn | a :-> Matrix(b @@ conv) where b, _ is a @ partial_lift>;
+  end if;
   return g, proj, lift;
+end function;
+
+forward trivial_central_extension;
+PrepareGlnModInPlusk := function(k, n)
+  g, proj_gln, lift_gln := PrepareGlnQuotient(k, n);
+  e, inj_ext, proj_ext := trivial_central_extension(g);
+  s := sub<e | [a*b : a, b in Basis(e)]>;
+  gln := Domain(proj_gln);
+  x := gln.1 @ proj_gln @ inj_ext;
+  c := BasisElement(Center(e), 1);
+  new_basis := [c, x] cat Basis(s);
+  e, conv := ChangeBasis(e, new_basis);
+  return e, inj_ext * conv, Inverse(conv) * proj_ext, lift_gln, proj_gln;
+end function;
+
+CompareEigenvalues := function(x, y)
+  return x[2] - y[2];
+end function;
+
+SortedEigenvalues := function(M)
+  ev := SetToSequence(Eigenvalues(M));
+  Sort(~ev, CompareEigenvalues);
+  return [e[1] : e in ev];
+end function;
+
+LieAlgebraFromMatrixGen:= function(gen)
+  ML := Universe(gen);
+  s, inj := sub<ML | gen>;
+  g, conv := LieAlgebra(s);
+  rep := Inverse(conv) * inj;
+  return g, rep;
 end function;

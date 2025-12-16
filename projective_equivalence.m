@@ -60,7 +60,7 @@ ComputeLieAlgebraBasisHomogeneous := function(pols)
   return res;
 end function;
 
-ComputeLieAlgebra := function(eqs, n, quotient: proj := 0)
+ComputeLieAlgebra := function(eqs, n)
   R := Parent(eqs[1]);
   k := BaseRing(R);
   N := Rank(R);
@@ -72,30 +72,101 @@ ComputeLieAlgebra := function(eqs, n, quotient: proj := 0)
     basis := ComputeLieAlgebraBasis(eqs, n);
   end if;
 
-  if quotient then
-    assert proj cmpne 0;
-    target := Codomain(proj);
-    basis := [b @ proj : b in basis];
-    Exclude(~basis, Zero(target));
-    g, rep := sub<target | basis>;
-  else
-    g, inj := sub<gln | basis>;
-    g, conv := LieAlgebra(g);
-    rep := Inverse(conv) * inj;
-  end if;
-  return g, rep;
+  ChangeUniverse(~basis, gln);
+
+  return LieAlgebraFromMatrixGen(basis);
 end function;
 
-//Takes two isomorphic Lie algebras embedded in gl_n.
-//They should be represented as one list of triples of matrices
-//corresponding to respective basis elements of each Lie algebras
-//that are images of one another by a Lie algebra isomorphism.
-//Elements two and three are conjugate by the outer automorphism of gl_n.
-//Outputs an isomorphism of the natural representation. That is,
-//an invertible matrix T in gl_n such that the second Lie algebra is the
-//conjugate of the first by T.
-LieAlgebraRepresentationIsomorphism := function(rep1, rep2)
+CompatibleIsomorphismsGln := function(rep1, rep2)
+  g1 := Domain(rep1);
+  g2 := Domain(rep2);
 
+  half_iso1 := SplitGln(g1);
+  half_iso2 := Inverse(SplitGln(g2));
+  gln := Domain(half_iso2);
+  graph := GraphAuto(gln);
+
+  e := gln.1 @@ half_iso1;
+  ev_target := SortedEigenvalues(e @ rep1);
+  ev_start := SortedEigenvalues(e @ half_iso1 @ half_iso2 @ rep2);
+
+  a := (ev_target[2] - ev_target[1]) / (ev_start[2] - ev_start[1]);
+  step := (One(gln) @ half_iso2 @ rep2)[1,1];
+  lambda := (a * ev_target[1] - ev_start[1]) / step;
+  h := h_isom(gln, lambda);
+
+  if IsOdd(Characteristic(BaseRing(gln))) then
+    if a eq -1 then
+      h *:= graph;
+    end if;
+    return [half_iso1 * h * half_iso2];
+  else
+    return [half_iso1 * h * half_iso2, half_iso1 * graph * h * half_iso2];
+  end if;
+end function;
+
+CompatibleIsomorphismsGlnModInPlusk := function(rep1, rep2);
+  g1 := Domain(rep1);
+  g2 := Domain(rep2);
+  k := BaseRing(g1);
+  _, n := IsSquare(Dimension(g1));
+
+  L, inj_ext, proj_ext, lift_gln, proj_gln := PrepareGlnModInPlusk(k, n);
+  d := Dimension(L);
+  half_iso1 := SplitGlnQuotientTriviallyExtended(g1, inj_ext, proj_gln);
+  half_iso2 := Inverse(SplitGlnQuotientTriviallyExtended(g2,
+                                                        inj_ext,
+                                                        proj_gln));
+  graph := GraphAutoSpecialCase(L, inj_ext, proj_ext, lift_gln, proj_gln);
+  c := BasisElement(L, 1);
+  c1_coef := (c @@ half_iso1 @ rep1)[1, 1];
+  c2_coef := (c @ half_iso2 @ rep2)[1, 1];
+  h := h_isom_special_case(L, c1_coef / c2_coef);
+  h_graph := graph * h_isom_special_case(L, -c1_coef / c2_coef);
+
+  e := BasisElement(L, 2) @@ half_iso1;
+  ev_target := SortedEigenvalues(e @ rep1);
+  ev_start := SortedEigenvalues(e @ half_iso1 @ half_iso2 @ rep2);
+
+  a := (ev_target[2] - ev_target[1]) / (ev_start[2] - ev_start[1]);
+  lambda := (a * ev_target[1] - ev_start[1]) / c1_coef;
+  extra := extra_isom_special_case(L, lambda);
+
+  if IsOdd(Characteristic(BaseRing(L))) then
+    if a eq -1 then
+      h := h_graph;
+    end if;
+    isos := [half_iso1 * h * extra * half_iso2];
+  else
+    isos := [half_iso1 * h * extra * half_iso2, half_iso1 * graph * h * extra * half_iso2];
+  end if;
+  for iso in isos do
+    print (c @@ half_iso1 @ rep1)[1,1];
+    print (c @@ half_iso1 @ iso @ rep2)[1,1];
+    print SortedEigenvalues(e @ rep1);
+    print SortedEigenvalues(e @ iso @ rep2);
+    print "****";
+  end for;
+  return isos;
+end function;
+
+LieAlgebraRepresentationIsomorphism := function(rep1, rep2, isos)
+  g1 := Domain(rep1);
+  N := Degree(Codomain(rep1));
+  k := BaseRing(g1);
+  MA := MatrixAlgebra(k, N);
+
+  for iso in isos do
+    system := Matrix([
+      &cat[
+        Eltseq(Matrix(a @ rep1) * P - P * Matrix(a @ iso @ rep2))
+      : a in Basis(g1)]
+    : P in Basis(MA)]);
+    ker := Nullspace(system);
+    if Dimension(ker) eq 1 then
+      return MA!Eltseq(Basis(ker)[1]);
+    end if;
+  end for;
 end function;
 
 LieAlgebraProjectiveRepresentationIsomorphism := function(rep1, rep2, lift_big)
@@ -129,6 +200,7 @@ ComputeProjectiveEquivalence := function(eqs_1, eqs_2, n, d : f := 1, verbose :=
   R := Parent(eqs_1[1]);
 	k := BaseRing(R);
   special_case := IsZero(k!n) and IsZero(k!d);
+  /*
   if special_case then
     N := Rank(R);
     _, proj_big, lift_big := PrepareGlnQuotient(k, N: normalise := true);
@@ -137,9 +209,22 @@ ComputeProjectiveEquivalence := function(eqs_1, eqs_2, n, d : f := 1, verbose :=
   end if;
   g1, rep1 := ComputeLieAlgebra(eqs_1, n, special_case : proj := proj_big);
   g2, rep2 := ComputeLieAlgebra(eqs_2, n, special_case : proj := proj_big);
+  */
+  g1, rep1 := ComputeLieAlgebra(eqs_1, n);
+  g2, rep2 := ComputeLieAlgebra(eqs_2, n);
+
+  if special_case then
+    isos := CompatibleIsomorphismsGlnModInPlusk(rep1, rep2);
+  else
+    isos := CompatibleIsomorphismsGln(rep1, rep2);
+  end if;
+
+  return LieAlgebraRepresentationIsomorphism(rep1, rep2, isos);
+/*
   if special_case then
     return LieAlgebraProjectiveRepresentationIsomorphism(rep1, rep2, lift_big);
   else
     return LieAlgebraRepresentationIsomorphism(rep1, rep2);
   end if;
+*/
 end function;

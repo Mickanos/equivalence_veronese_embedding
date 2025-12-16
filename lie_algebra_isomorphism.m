@@ -241,3 +241,15 @@ SplitGlnQuotient := function(L, proj)
 	basis_image := [b @ lift @ iso @ proj: b in Basis(L)];
 	return hom<L -> gln_mod_In | basis_image>;
 end function;
+
+SplitGlnQuotientTriviallyExtended := function(L, inj_ext, proj_gln)
+	summands := DirectSumDecomposition(L);
+	target := Codomain(inj_ext);
+	one_target := Basis(target)[1];
+	C := [g : g in summands | Dimension(g) eq 1][1];
+	one_domain := L!Basis(C)[1];
+	g := [g : g in summands | Dimension(g) ne 1][1];
+	iso_g := SplitGlnQuotient(g, proj_gln);
+	return hom<L -> target | [<L!a, a @ iso_g @ inj_ext> : a in Basis(g)]
+							cat [<one_domain, one_target>]>;
+end function;

@@ -35,24 +35,26 @@ nontrivial_central_extension := function(g)
     f := nontrivial_cohomology_class(g);
     d := Dimension(g) + 1;
     k := BaseRing(g);
-    Q := [
-            [
-                Eltseq(BasisProduct(g, i, j)) cat [f(a,b)]
-            : j -> b in Basis(g)]
-            cat [[0: _ in [1..d]]]
-        : i -> a in Basis(g)]
-        cat [[[0: _ in [1..d]]: _ in [1..d]]];
+    Q := [[[0: _ in [1..d]]: _ in [1..d]]]
+        cat [
+            [[0: _ in [1..d]]]
+            cat [
+                [f(a, b)] cat Eltseq(BasisProduct(g, i, j))
+            : j -> b in Basis(g)
+            ]
+        : i -> a in Basis(g)
+        ];
     e := LieAlgebra<k, d | Q>;
-    lift := hom<g -> e | Basis(e)[1..d-1]>;
-    proj := hom<e -> g | Basis(g) cat [Zero(g)]>;
+    lift := hom<g -> e | Basis(e)[2..d]>;
+    proj := hom<e -> g | [Zero(g)] cat Basis(g)>;
     return e, lift, proj;
 end function;
 
 trivial_central_extension := function(g)
     k := BaseRing(g);
     d := Dimension(g);
-    e := DirectSum(g, AbelianLieAlgebra(k, 1));
-    lift := hom<g -> e | Basis(e)[1..d]>;
-    proj := hom<e -> g | Basis(g) cat [Zero(g)]>;
+    e := DirectSum(AbelianLieAlgebra(k, 1), g);
+    lift := hom<g -> e | Basis(e)[2..d + 1]>;
+    proj := hom<e -> g | [Zero(g)] cat Basis(g)>;
     return e, lift, proj;
 end function;
