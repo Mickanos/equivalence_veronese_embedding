@@ -1,22 +1,44 @@
+/*****************************************************************
+*                      Lie Algebra Isomorphisms					 *
+*****************************************************************/
+
+/*
+	Computing isomorphisms to specific Lie algebras such as gl_n and
+	(gl_n / k I_n) \oplus k.
+*/
+
 forward EnvelopingAlgebra;
-forward SplitMatrixAlgebra;
+forward IsomorphismToMnk;
 forward IsomorphismToGlnModIn;
 
-//Outputs an isomorphism from the Lie algebra L to gln.
+/*
+	Computes an isomorphism to gl_n, if it exists.
+	Inputs:
+	- L: The domain of the isomorphism.
+*/
 IsomorphismToGln := function(L)
+	k := BaseRing(L);
+	_, n := IsSquare(Dimension(L));
+	gln := MatrixLieAlgebra(k, n);
 	done, phi := EnvelopingAlgebra(L);
-	if done then
-		return phi;
-	end if;
 	A := Codomain(phi);
-	psi := SplitMatrixAlgebra(A);
+	if done then
+		psi := map<A -> A | x :-> x>;
+	else
+		psi := IsomorphismToMnk(A);
+	end if;
 	M := Matrix([Vector(b @ phi @ psi): b in Basis(L)]);
 	iM := M^-1;
-	_, n := IsSquare(Dimension(L));
-	gln := MatrixLieAlgebra(BaseField(L), n);
 	return map<L -> gln | x :-> gln!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
 end function;
 
+/*
+	Computes an isomorphism to (gl_n / k I_n) \oplus k if it exists.
+	Inputs:
+		- L: The domain of the isomorphism.
+		- inj_ext: The output of the same name from ConstructNotGln.
+		- proj_gln: Likewise.
+*/
 IsomorphismToNotGln := function(L, inj_ext, proj_gln)
 	summands := DirectSumDecomposition(L);
 	target := Codomain(inj_ext);
@@ -29,7 +51,16 @@ IsomorphismToNotGln := function(L, inj_ext, proj_gln)
 							cat [<one_domain, one_target>]>;
 end function;
 
-//Compute the roots and corresponding spaces of the adjoint representation of split Cartan subalgebra H on L.
+/*
+	Compute the roots and corresponding spaces of the adjoint representation 
+	of a split Cartan subalgebra H on L.
+	Inputs:
+		- L: The domain of the isomorphism.
+		- H: A split Cartan subalgebra of L.
+	Outputs:
+		- spaces: The sequence of eigenspaces of H.
+		- roots: The sequence of roots of H, in order matching that of spaces.
+*/
 ComputeRoots := function(L, H)
 	mats := [Matrix(-AdjointMatrix(L, h)) : h in Basis(H)];
 	spaces, roots := CommonEigenspaces(mats);
@@ -40,6 +71,16 @@ ComputeRoots := function(L, H)
 	return spaces, roots;
 end function;
 
+/*
+	Computes the privileged basis of an eigenspace of the adjoint representation
+	of a split Cartan subalgebra of a Lie algebra g isomorphic to gl_n,
+	following Lemma 5.9 of the publication.
+	Inputs:
+		- L: The Lie algebra isomorphic to gl_n.
+		- spaces: The sequence of eigenspaces of L under the Cartan subalgebra.
+		- roots: The sequence of roots, ordered accordingly.
+		- i: The index of the space whose privileged basis is to be computed.
+*/
 Char2SpaceBreak := function(L, spaces, roots, i)
 	F := BaseRing(L);
 	root := roots[i];
@@ -66,7 +107,18 @@ Char2SpaceBreak := function(L, spaces, roots, i)
 	return [L!(z*ba[1] + ba[2]) : z in zeros];
 end function;
 
-
+/*
+	Computes a basis of eigenvectors of Lie algebra L isomorphic to gl_n under
+	the adjoint representation of a split Cartan subalgebra. The basis is
+	suitable to be used for computing an isomorphim to gl_n following
+	Algorithm 5.10.
+	Inputs:
+		- L: The Lie algebra isomorphic to gl_n.
+		- spaces: The sequence of eigenspaces of L under the Cartan subalgebra.
+		- roots: The sequence of roots of L, ordered accordingly.
+	Outputs:
+		A sequence of sequences, so the eigenvectors are grouped by eigenspaces.
+*/
 Eigenbasis := function(L, spaces, roots)
 	return [
 		Dimension(space) eq 1 select [L!b : b in Basis(space)] else
@@ -74,18 +126,35 @@ Eigenbasis := function(L, spaces, roots)
 		: i -> space in spaces];
 end function;
 
-//Returns the list of values taken by an associative array. Now implemented in Magma, left for retro-compatibility.
+/*
+	Checks whether an object appears as a value in a dictionary. Linear cost.
+	Inputs:
+		- A: The dictionary.
+		- v: The value to be checked.
+*/
 AppearsIn := function(A, v)
 	return &or[A[k] eq v : k in Keys(A)];
 end function;
 
+/*
+	Index the roots of the adjoint representation of a split Cartan subalgebra
+	of a Lie algebra isomorphic to gl_n in a way that matches their respective
+	eigenspaces with the eigenspaces of the representation of the representation
+	of the canonical split Cartan subalgebra of gl_n.
+	This is step 2 of Algorithm 5.10, see also Lemma 5.8 and the proof of
+	Proposition 5.4.
+	Inputs:
+		- roots: The sequence of roots of the aforemenionned representation.
+*/
 IndexRoots := function(roots)
 	n := Degree(roots[1]);
 	res := AssociativeArray();
 	res[<1,2>] := roots[1];
 	res[<2,1>] := -roots[1];
-	//The loop invariant is that at the start of iteration i, all the roots of the 
-	//form Phi_{kl} such that k < l <= i are properly indexed in res.
+	/*
+		The loop invariant is that at the start of iteration i, all the roots 
+		of the  form Phi_{kl} such that k < l <= i are properly indexed in res.
+	*/
 	for i in [2..n-1] do
 		if i eq 2 then
 			res[<i,i+1>] := [r : r in roots
@@ -110,6 +179,13 @@ end function;
 
 //Returns scalar t such that t*a eq b;
 //Throws an error if a and b aren't colinear vectors.
+/*
+	Computes scalar t such that t*a eq b, and throws an error if there is no
+	such t.
+	Inputs:
+		- a: An indexable type that can be converted to a sequence.
+		- b: Likewise.
+*/
 Colinearity := function(a, b)
   i := Index([IsZero(c) : c in Eltseq(a)], false);
   t := b[i]/a[i];
@@ -117,6 +193,16 @@ Colinearity := function(a, b)
   return t;
 end function;
 
+/*
+	Computes a basis of a Lie algebra isomorphic to gl_n, so that mappring the
+	basis elements to the canonical row-major basis of gl_n is an isomorphism
+	of Lie algebras.
+	Inputs:
+		- roots: The sequence of roots of the Lie algebra under H.
+		- indexed_roots: The roots as indexed by the function IndexRoots.
+		- eigenbasis: An eigenbasis as computed by the function Eigenbasis.
+		- H: The split Cartan Lie algebra.
+*/
 GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
 	n := Degree(roots[1]);
 	p := Characteristic(BaseRing(roots[1]));
@@ -186,6 +272,13 @@ GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
 	return [res[<i,j>]: i,j in [1..n]];
 end function;
 
+/*
+	Outputs a copy of a Lie algebra, with basis changed to match the row-major
+	canonical basis of gl_n, as well as the base-change isomorphism.
+	Inputs:
+		- L: The Lie algebra.
+		- H: A split Cartan subalgebra of L.
+*/
 NormaliseSplitLieAlgebra := function(L, H)
 	spaces, roots := ComputeRoots(L, H);
 	eigenbasis := Eigenbasis(L, spaces, roots);
@@ -194,9 +287,17 @@ NormaliseSplitLieAlgebra := function(L, H)
 	return ChangeBasis(L, basis);
 end function;
 
-// input: A Lie algebra L
-// output: An extension of the base field of L,
-// the base change of L and a split Cartan subalgebra of this base change.
+/*
+	Computes a split Cartan subalgebra of a Lie algebra. May need to extend the
+	scalars.
+	Inputs:
+		- L: The Lie algebra.
+	Outputs:
+		- K: An extension of the base field of L.
+		- LK: The Lie algebra L if scalars extended to K.
+		- HK: A split Cartan subalgebra of LK.
+		- base_change_map: The natural map from L to LK.
+*/
 BaseChangeAndSplitCartan := function(L)
   H := CartanSubalgebra(L);
   B := [AdjointMatrix(L, b) : b in Basis(H)];
@@ -209,8 +310,15 @@ BaseChangeAndSplitCartan := function(L)
   return K, LK, HK, base_change_map;
 end function;
 
-//Input: A polynomial P over some field K, with subfield k.
-//Output: A sequence of polynomials over k which combine into P with coefficients the basis of K over k.
+/*
+	Given a polynomial P defined over an extension K/k, computes a
+	sequence of polynomials over k, whose respective coefficients are the
+	components of the coefficients of P with respect to some arbitrary k-basis
+	of K.
+	Inputs:
+		- P: A polynomial defined over an extension of k.
+		- k: A field.
+*/
 Polyseq := function(P, k)
 	d := Degree(BaseRing(Parent(P)), k);
 	R := ChangeRing(Parent(P), k);
@@ -224,9 +332,21 @@ Polyseq := function(P, k)
 	return polys_k;
 end function;
 
-AdjustStructureConstants := function(L, iso)
+/*
+	Computes an isomorphim f to gl_n(K) such that the images by f of the basis
+	of its domain have characteristic polynomials with coefficients lying in k,
+	the base ring of K.
+	See Step 5 of Algorithm 5.2 and the proof of Theorem 1.1.
+	Inputs:
+		- iso: An isomorphism from some Lie algebra to gl_n(K).
+	Output:
+		- An isomorphism from the same Lie algebra to gl_n(K) with the property
+			described above.
+*/
+AdjustStructureConstants := function(iso)
 	MA := Codomain(iso);
 	K := BaseRing(MA);
+	L := Domain(iso);
 	k := BaseRing(L);
 	d := Degree(K, k);
 	R := PolynomialRing(K, d);
@@ -247,19 +367,30 @@ AdjustStructureConstants := function(L, iso)
 	return iso * adjustment;
 end function;
 	
-//Descends A to an associative algebra over k.
-//Assumes that the structure constants of A all lie in k,
-//even if A is defined over an extension.
+/*
+	Outputs an associative algebra defined over k, with the same structure
+	constants as A, which may be defined over an extension of K but has
+	rational structure constants.
+	Inputs:
+		- A: An associative algebra with structure constants lying in k.
+		- k: A subfield of the base ring of A.
+*/
 DescendAssociativeAlgebra := function(A, k)
 	d := Dimension(A);
 	Q := [[ChangeUniverse(Eltseq(BasisProduct(A, i, j)), k): j in [1..d]]: i in [1..d]];
 	return AssociativeAlgebra<k, d | Q : Check := false>;
 end function;
 
-//Given a Lie algebra isomorphic to some gl_n(k), computes an enveloping
-//algebra following the algorithm from Section 2.2 of Pilnikova's thesis.
-//Outputs either true and an isomorphism to M_n(k), or false and an injection of L into M_n(K)
-//such that the image of L is stable by multiplication.
+/*
+	Computes a map from Lie algebra L to an associative algebra isomorphic
+	to M_n(k). The map is an isomorphism of Lie algebras.
+	Inputs:
+		- L: The Lie algebra.
+	Outputs:
+		- A boolean indicating whether the codomain of the map is M_n(k) itself 
+		or only isomorphic to it.
+		- The map that was computed.
+*/
 EnvelopingAlgebra := function(L)
   K, LK, HK, bc_map := BaseChangeAndSplitCartan(L);
   NL, Liso := NormaliseSplitLieAlgebra(LK, HK);
@@ -273,7 +404,7 @@ EnvelopingAlgebra := function(L)
   	return true, iso;
   end if;
   iso := map<L -> Ma | b :-> Ma!Eltseq(b @ iso)>;
-  iso := AdjustStructureConstants(L, iso);
+  iso := AdjustStructureConstants(iso);
   MaAss, phi := Algebra(Ma);
   A := sub<MaAss | [b @ iso @ phi: b in Basis(L)]>;
   A, psi := ChangeBasis(A, [b @ iso @ phi: b in Basis(L)]);
@@ -282,10 +413,16 @@ EnvelopingAlgebra := function(L)
   return false, final_iso;
 end function;
 
+/*
+	Computes an isomorphism to the Lie algebra gl_n / k I_n.
+	Inputs:
+		- L: A Lie algebra isomorphic to gl_n / k I_n.
+		- proj: The projection from gl_n to gl_n / k I_n.
+*/
 IsomorphismToGlnModIn := function(L, proj)
 	k := BaseRing(L);
 	if IsZero(k!(Dimension(L) + 1)) then
-		e, lift := nontrivial_central_extension(L);
+		e, lift := NontrivialCentralExtension(L);
 	else
 		e := DirectSum(L, AbelianLieAlgebra(k, 1));
 		lift := hom<L -> e | Basis(e)[1..Dimension(L)]>;
@@ -296,8 +433,12 @@ IsomorphismToGlnModIn := function(L, proj)
 	return hom<L -> gln_mod_In | basis_image>;
 end function;
 
-//Computes an isomorphism to an associative matrix algebra
-SplitMatrixAlgebra := function(A)
+/*
+	Computes an isomorphism from an associative algebra to M_n(k).
+	Inputs:
+		- A: An associative algebra isomorphic to M_n(k).
+*/
+IsomorphismToMnk := function(A)
   _, n := IsSquare(Dimension(A));
   k := BaseField(A);
   MA := MatrixAlgebra(k, n);

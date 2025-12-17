@@ -1,4 +1,4 @@
-veronese_3_2 := function()
+veronese_2_2 := function()
   R := PolynomialRing(IntegerRing(), 6);
   return [
 R.1*R.4 - R.2^2,
@@ -10,7 +10,7 @@ R.4*R.6 - R.5^2
 ];
   end function;
 
-veronese_3_3 := function()
+veronese_2_3 := function()
   R := PolynomialRing(IntegerRing(), 10);
   return [
 R.1*R.4 - R.2^2,
@@ -43,7 +43,7 @@ R.8*R.10 - R.9^2
 ];
   end function;
 
-veronese_3_4 := function()
+veronese_2_4 := function()
   R := PolynomialRing(IntegerRing(), 15);
   return [
 R.1*R.4 - R.2^2,
@@ -124,7 +124,7 @@ R.13*R.15 - R.14^2
 ];
   end function;
 
-veronese_3_5 := function()
+veronese_2_5 := function()
   R := PolynomialRing(IntegerRing(), 21);
   return [
 R.1*R.4 - R.2^2,
@@ -295,7 +295,7 @@ R.19*R.21 - R.20^2
 ];
   end function;
 
-veronese_3_6 := function()
+veronese_2_6 := function()
   R := PolynomialRing(IntegerRing(), 28);
   return [
 R.1*R.4 - R.2^2,
@@ -616,7 +616,7 @@ R.26*R.28 - R.27^2
 ];
   end function;
 
-veronese_3_7 := function()
+veronese_2_7 := function()
   R := PolynomialRing(IntegerRing(), 36);
   return [
 R.1*R.4 - R.2^2,
@@ -1168,7 +1168,7 @@ R.34*R.36 - R.35^2
 ];
   end function;
 
-veronese_3_8 := function()
+veronese_2_8 := function()
   R := PolynomialRing(IntegerRing(), 45);
   return [
 R.1*R.4 - R.2^2,
@@ -2056,7 +2056,7 @@ R.43*R.45 - R.44^2
 ];
   end function;
 
-veronese_4_2 := function()
+veronese_3_2 := function()
   R := PolynomialRing(IntegerRing(), 10);
   return [
 R.1*R.5 - R.2^2,
@@ -2082,7 +2082,7 @@ R.8*R.10 - R.9^2
 ];
   end function;
 
-veronese_4_3 := function()
+veronese_3_3 := function()
   R := PolynomialRing(IntegerRing(), 20);
   return [
 R.1*R.5 - R.2^2,
@@ -2214,7 +2214,7 @@ R.18*R.20 - R.19^2
 ];
   end function;
 
-veronese_4_4 := function()
+veronese_3_4 := function()
   R := PolynomialRing(IntegerRing(), 35);
   return [
 R.1*R.5 - R.2^2,
@@ -2685,7 +2685,7 @@ R.33*R.35 - R.34^2
 ];
   end function;
 
-veronese_4_5 := function()
+veronese_3_5 := function()
   R := PolynomialRing(IntegerRing(), 56);
   return [
 R.1*R.5 - R.2^2,
@@ -4001,7 +4001,7 @@ R.54*R.56 - R.55^2
 ];
   end function;
 
-veronese_5_2 := function()
+veronese_4_2 := function()
   R := PolynomialRing(IntegerRing(), 15);
   return [
 R.1*R.6 - R.2^2,
@@ -4057,7 +4057,7 @@ R.13*R.15 - R.14^2
 ];
   end function;
 
-veronese_5_3 := function()
+veronese_4_3 := function()
   R := PolynomialRing(IntegerRing(), 35);
   return [
 R.1*R.6 - R.2^2,
@@ -4483,7 +4483,7 @@ R.33*R.35 - R.34^2
 ];
   end function;
 
-veronese_5_4 := function()
+veronese_4_4 := function()
   R := PolynomialRing(IntegerRing(), 70);
   return [
 R.1*R.6 - R.2^2,
@@ -6479,7 +6479,7 @@ R.68*R.70 - R.69^2
 ];
   end function;
 
-veronese_5_5 := function()
+veronese_4_5 := function()
   R := PolynomialRing(IntegerRing(), 126);
   return [
 R.1*R.6 - R.2^2,

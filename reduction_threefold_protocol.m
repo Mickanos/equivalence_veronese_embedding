@@ -8,7 +8,7 @@
 // p := NextPrime(2^128);
 // d := 14;
 
-VeronesePublicData := function(Fq, d, k)
+VeronesePublicData := function(Fq, d : k := 2)
   R<x0,x1,y0,y1> := PolynomialRing(Fq, 4); // used both on P1 x P1 and on P3
   mons := SetToSequence(MonomialsOfDegree(R, d));
   bimons := [x0^i[1]*x1^(d - i[1])*y0^i[2]*y1^(d - i[2]) :
@@ -102,10 +102,4 @@ VeroneseReconstruction := function(SigmaP, M)
   end for;
 
   return I;
-end function;
-
-GetEquationThreefold := function(p, d)
-  k := GF(p);
-  SigmaP, M := VeronesePublicData(k, d, 2);
-  return VeroneseReconstruction(SigmaP, M);
 end function;

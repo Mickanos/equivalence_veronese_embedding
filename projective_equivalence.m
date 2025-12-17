@@ -2,11 +2,19 @@ forward CompatibleIsomorphismsGln;
 forward CompatibleIsomorphismsNotGln;
 forward LieAlgebraRepresentationIsomorphism;
 
-//Given quadric equations for a projective variety, computes a projective
-//Equivalence to the Veronese embedding of degree d with n variables.
+/*
+  Compute an isomorphism between two representations, themselves isomorphic
+  to the Lie algebra representation attached to the Veronese (n-1)-dimensional
+  variety of degree d.
+  Inputs:
+    rep1, rep2: Lie algebra representations isomorphic to the Lie algebra
+      of some Veronese variety.
+    n: The dimension of the Veronese variety.
+    d: The degree of the Veronese variety.
+*/
 VeroneseRepresentationsEquivalence := function(rep1, rep2, n, d)
 	k := BaseRing(Domain(rep1));
-  special_case := IsZero(k!n) and IsZero(k!d);
+  special_case := IsZero(k!(n + 1)) and IsZero(k!d);
 
   if special_case then
     isos := CompatibleIsomorphismsNotGln(rep1, rep2);
@@ -17,12 +25,28 @@ VeroneseRepresentationsEquivalence := function(rep1, rep2, n, d)
   return LieAlgebraRepresentationIsomorphism(rep1, rep2, isos);
 end function;
 
+/*
+  Computes the list of eigenvalues of a matrix ordered by increasing
+  multiplicities.
+  Inputs:
+    - M: A matrix.
+*/
 SortedEigenvalues := function(M)
   ev := SetToSequence(Eigenvalues(M));
   Sort(~ev, func<x, y | x[2] - y[2]>);
   return [e[1] : e in ev];
 end function;
 
+/*
+  Compute a sequence of isomorphisms between the domains of rep1 and rep2, 
+  themselves isomorphic to gl_n. It is assumed that rep1 and rep2 are isomorphic
+  to the representation attached to a Veronese variety.
+  It is guaranteed that one of the isomorphisms in the output underlies an
+  isomorphism of representations.
+  Inputs:
+    - rep1, rep2: Representations of Lie algebras isomorphic to a representation
+    attached to a Veronese variety, and with domains isomorphic to gl_n.
+*/
 CompatibleIsomorphismsGln := function(rep1, rep2)
   g1 := Domain(rep1);
   g2 := Domain(rep2);
@@ -51,6 +75,17 @@ CompatibleIsomorphismsGln := function(rep1, rep2)
   end if;
 end function;
 
+/*
+  Compute a sequence of isomorphisms between the domains of rep1 and rep2, 
+  themselves isomorphic to (gl_n / k I_n) \oplus k. It is assumed that rep1 and 
+  rep2 are isomorphic to the representation attached to a Veronese variety.
+  It is guaranteed that one of the isomorphisms in the output underlies an
+  isomorphism of representations.
+  Inputs:
+    - rep1, rep2: Representations of Lie algebras isomorphic to a representation
+      attached to a Veronese variety, and with domains isomorphic to
+      (gl_n / k I_n) \oplus k.
+*/
 CompatibleIsomorphismsNotGln := function(rep1, rep2);
   g1 := Domain(rep1);
   g2 := Domain(rep2);
@@ -89,6 +124,14 @@ CompatibleIsomorphismsNotGln := function(rep1, rep2);
   return isos;
 end function;
 
+/*
+  Computes an isomorphism between Lie algebras rep1 and rep2, assuming that
+  isos is a sequence of isomorphisms between their domains, such that at least
+  one of them underlies such a representation isomorphism.
+  Inputs:
+    - rep1, rep2: Representations of Lie algebras.
+    - isos: A sequence of isomorphisms between the domains of rep1 and rep2.
+*/
 LieAlgebraRepresentationIsomorphism := function(rep1, rep2, isos)
   g1 := Domain(rep1);
   N := Degree(Codomain(rep1));
