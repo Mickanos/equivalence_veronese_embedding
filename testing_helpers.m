@@ -154,7 +154,7 @@ PrecomputeVeroneseEquations := procedure(n, d)
   s := Sprintf("veronese_%o_%o := function()\n", n, d) cat
       Sprintf("  R := PolynomialRing(IntegerRing(), %o);\n", N) cat
       Sprintf("  return %o;\n", eqs) cat
-      "  end function;\n";
+      "end function;\n";
   PrintFile(filename, s);
 end procedure;
 
