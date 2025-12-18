@@ -86,17 +86,27 @@ end function;
 ComputeLieAlgebraBasis := function(eqs : f := 1, expected_dimension := 0)
   F := BaseRing(eqs[1]);
   n := Nrows(eqs[1]);
-  AMod, Quo := quo<KMatrixSpace(F, n, n) | eqs>;
-  number_eqs_used := Ceiling(f * #eqs);
-  repeat
-    used_eqs := RandomElements(eqs, number_eqs_used);
+  MS := KMatrixSpace(F, n, n);
+  AMod, Quo := quo<MS | eqs>;
+  if f lt 1 then
+    number_eqs_used := Ceiling(f * #eqs);
+    repeat
+      used_eqs := RandomElements(eqs, number_eqs_used);
+      M := HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
+          b in Basis(MS)]): a in used_eqs]);
+      M := Transpose(M);
+      RemoveZeroRows(~M);
+      M := Transpose(M);
+      ker := Nullspace(M);
+    until Dimension(ker) eq expected_dimension;
+  else
     M := HorizontalJoin([Matrix([Eltseq(Quo(Transpose(b)*a + a*b)) :
-        b in Basis(MatrixAlgebra(F,n))]): a in used_eqs]);
+      b in Basis(MS)]): a in eqs]);
     M := Transpose(M);
     RemoveZeroRows(~M);
     M := Transpose(M);
     ker := Nullspace(M);
-  until Dimension(ker) eq expected_dimension;
+  end if;
   B := Basis(ker);
   return [Matrix(F,n,n,Eltseq(b)): b in B];
 end function;
