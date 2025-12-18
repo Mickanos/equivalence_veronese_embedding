@@ -1,3 +1,12 @@
+/*****************************************************************
+*              Veronese Representation Isomorphism               *
+*****************************************************************/
+
+/*
+  Computing isomorphisms between Lie algebra representations isomorphic to
+  representations induces by Veronese varieties.
+*/
+
 forward CompatibleIsomorphismsGln;
 forward CompatibleIsomorphismsNotGln;
 forward LieAlgebraRepresentationIsomorphism;

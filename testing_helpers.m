@@ -1,3 +1,12 @@
+/*****************************************************************
+*                        Testing Helpers                         *
+*****************************************************************/
+
+/*
+  Helper functions for testing purposes. These functions either generate
+  inputs for the problems treated or check that solutions are valid.
+*/
+
 forward NumberOfMonomials;
 forward GetVeroneseEquations;
 forward PolySubstitution;
@@ -16,9 +25,7 @@ GetTwistedVeronese := function(q, n, d)
   k := GF(q);
   vero_eqs := GetVeroneseEquations(k, n, d);
   N := Rank(Universe(vero_eqs));
-  repeat
-    T := RandomMatrix(k, N, N);
-  until IsUnit(T);
+  T := Random(GL(N, k));
   return [PolySubstitution(e, T) : e in vero_eqs];
 end function;
 
@@ -70,11 +77,7 @@ GetTwistedVeroneseRepresentation := function(q, n, d)
     glN := Codomain(phi);
     LieBasis := [Matrix(b @ phi) : b in Basis(g)];
     N := Degree(glN);
-
-    repeat
-      T := RandomMatrix(k, N, N);
-    until IsUnit(T);
-
+    T := Random(GL(N, k));
     Ti := T^-1;
     TwistedLieBasis := [T*b*Ti : b in LieBasis];
     S, inj := sub<glN | TwistedLieBasis>;
@@ -146,7 +149,7 @@ end function;
     - d: The degree of the variety.
 */
 PrecomputeVeroneseEquations := procedure(n, d)
-  filename := "veronese_equations.m";
+  filename := "precomuted_data.m";
   eqs := VeroneseEquations(n, d);
   R := Universe(eqs);
   N := Rank(R);

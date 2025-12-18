@@ -1,0 +1,98 @@
+> clear;
+> load "examples.m";
+Loading "examples.m"
+Loading "main.m"
+Loading "precomputed_data.m"
+Loading "central_extension.m"
+Loading "lie_algebra_constructions.m"
+Loading "lie_algebra_computation.m"
+Loading "lie_algebra_isomorphism.m"
+Loading "veronese_representations_isomorphism.m"
+Loading "cryptanalytical_reductions.m"
+Loading "testing_helpers.m"
+For all tests below, the base field is a prime field of size 
+340282366920938463463374607431768211507,a 128-bits prime number.
+We begin with computing projective equivalences to Veronese surfaces
+Parameters: r = 2, d = 3
+Time taken to generate equations:
+Time: 0.000
+Time: 0.010
+Time taken to compute the Lie algebras of the varieties.
+Time: 0.060
+Time: 0.060
+Time taken to compute a projective equivalence:
+Time: 0.110
+An equivalence was found.
+In total, the time taken to solve the problem was 0.230.
+========================
+Parameters: r = 2, d = 5
+Time taken to generate equations:
+Time: 0.060
+Time: 0.060
+Time taken to compute the Lie algebras of the varieties.
+Time: 2.850
+Time: 5.660
+Time taken to compute a projective equivalence:
+Time: 1.650
+An equivalence was found.
+In total, the time taken to solve the problem was 10.160.
+========================
+Parameters: r = 2, d = 8
+Time taken to generate equations:
+Time: 1.470
+Time: 1.470
+Time taken to compute the Lie algebras of the varieties.
+Time: 252.190
+Time: 367.640
+Time taken to compute a projective equivalence:
+Time: 41.300
+An equivalence was found.
+In total, the time taken to solve the problem was 661.130.
+========================
+We then compute equivalences to Veronese threefolds
+Parameters: r = 3, d = 3
+Time taken to generate equations:
+Time: 0.040
+Time: 0.040
+Time taken to compute the Lie algebras of the varieties.
+Time: 5.150
+Time: 2.790
+Time taken to compute a projective equivalence:
+Time: 3.960
+An equivalence was found.
+In total, the time taken to solve the problem was 11.900.
+========================
+Parameters: r = 3, d = 4
+Time taken to generate equations:
+Time: 0.470
+Time: 0.470
+Time taken to compute the Lie algebras of the varieties.
+Time: 83.980
+Time: 41.380
+Time taken to compute a projective equivalence:
+Time: 27.640
+An equivalence was found.
+In total, the time taken to solve the problem was 153.000.
+========================
+In order to check computations with higher parameters, we circumvent the bottleneck of our algorithm, which is to compute the Lie algebra of a variety.We compute representation isomorphism to the Lie algebra representation of Veronese surfaces.
+Parameters: r = 2, d = 11
+
+In file "examples.m", line 38, column 1:
+>> RoutineTestLie(p, 2, 11);
+   ^
+User error: Identifier 'RoutineTestLie' has not been declared or assigned
+========================
+Parameters: r = 2, d = 13
+
+In file "examples.m", line 42, column 1:
+>> RoutineTestLie(p, 2, 13);
+   ^
+User error: Identifier 'RoutineTestLie' has not been declared or assigned
+========================
+Parameters: r = 2, d = 14
+
+In file "examples.m", line 46, column 1:
+>> RoutineTestLie(p, 2, 14);
+   ^
+User error: Identifier 'RoutineTestLie' has not been declared or assigned
+========================

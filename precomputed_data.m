@@ -1,3 +1,13 @@
+lie_computation_proportions := AssociativeArray();
+lie_computation_proportions[<2, 3>] := 0.3;
+lie_computation_proportions[<2, 4>] := 0.2;
+lie_computation_proportions[<2, 5>] := 0.15;
+lie_computation_proportions[<2, 6>] := 0.1;
+lie_computation_proportions[<2, 7>] := 0.09;
+lie_computation_proportions[<2, 8>] := 0.08;
+lie_computation_proportions[<3, 3>] := 0.16;
+lie_computation_proportions[<3, 4>] := 0.08;
+
 veronese_2_2 := function()
   R := PolynomialRing(IntegerRing(), 6);
   return [

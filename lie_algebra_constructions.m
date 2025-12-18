@@ -38,7 +38,7 @@ ConstructNotGln := function(k, n)
 end function;
 
 /*
-  Computes the Lie algebra representation attached to the Veronese variety of dimension n-1 and degree d.
+  Computes the Lie algebra representation attached to the Veronese variety of dimension n and degree d.
   Inputs:
     - k : The base field.
     - n : The dimension of the Veronese variety.
