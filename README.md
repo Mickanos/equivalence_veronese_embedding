@@ -8,6 +8,7 @@ The file **examples.m** will run examples on its own, while **main.m** defines f
 - **RoutineTestNoLie(q, r, d)** performs the same task, except that it bypasses the computation of the Lie algebras of the varieties by directly constructing lie algebras conjugated to the Lie algebra of the Veronese variety of dimension $n$ and degree $d$ over $\mathbb{F}_q$.
 - **CryptanalysisVero3**(q, d) generates public data for the scheme **Vero3** cited in our paper. It then computes the twist of the Veronese threefold of degree $d$ over the field $\mathbb{F}_q$ which underlies the security of the scheme. A projective equivalence to the Veronese threefold is then computed, thus breaking the security of the scheme for the choice of parameters. We note that while our attack has polynomial complexity, this unoptimised implementation does not break the AES-128 parameter choice for this scheme in feasible time.
 ## Content of the files
+In general, the main functions of each file have been placed at the top for better readability.
 - **central_extension.m** implements algorithms for generating central extensions of Lie algebras using homological algebra.
 - **cryptanalitical_reductions.m** implements the generation of public data for relevant cryptographic schemes and the computation of twisted Veronese varieties from these public data. As of now, only the scheme which we call**Vero3** is treated.
 - **examples.m** contains code which reproduces the computations whose timings are mentioned in our paper.
