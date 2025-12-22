@@ -8,6 +8,90 @@ load "cryptanalytical_reductions.m";
 load "testing_helpers.m";
 
 /*
+    Generates public data for the scheme Vero3, recovers the obfuscated
+    Veronese variety from the public data and computes a projective equivalence
+    to the standard Veronese variety.
+    Inputs:
+        - q : The size of the base field.
+        - d : The degree of the Veronese embedding used for Vero3.
+*/
+CryptanalysisVero3 := procedure(q, d: optimise_lie_computation := true)
+    k := GF(q);
+    print "Time taken to generate random public data for Vero3:";
+    time pp, Sigma, M := Vero3PublicData(k, d);
+
+    T := Cputime();
+    print "Time taken to compute equations for the obfuscated threefold:";
+    time eqs := VeroReduction(pp, Sigma, M);
+
+    print "Time taken to compute the Lie algebra of the obfuscated threefold:";
+    time _, rep_threefold := ComputeLieAlgebra(
+        eqs:
+        optimise := optimise_lie_computation,
+        n := 3,
+        d := d);
+
+    printf "Time taken to recompute the Lie algebra of the Veronese "; 
+    printf "threefold of degree %o:\n", d;
+    time rep_vero := VeroneseRepresentation(k, 3, d);
+
+    printf "Time taken to recover a projective equivalence to the";
+    printf " Veronese threefold:\n";
+    time sol := VeroneseRepresentationsEquivalence(rep_threefold, rep_vero, 3, d);
+    T := Cputime(T);
+
+    if CheckEquivalenceToVeronese(eqs, sol, 3, d) then
+        print "An equivalence was found.";
+    else
+        print "The program gave an incorrect output.";
+    end if;
+
+    printf "The total time needed for solving the problem was %o.\n", T;
+end procedure;
+
+/*
+    Generates public data for the scheme Vero2, recovers the obfuscated
+    Veronese variety from the public data and computes a projective equivalence
+    to the standard Veronese variety.
+    Inputs:
+        - q : The size of the base field.
+        - d : The degree of the Veronese embedding used for Vero3.
+*/
+CryptanalysisVero2 := procedure(q, d: optimise_lie_computation := true)
+    k := GF(q);
+    print "Time taken to generate random public data for Vero3:";
+    time pp, Sigma, M := Vero2PublicData(k, d);
+
+    T := Cputime();
+    print "Time taken to compute equations for the obfuscated surface:";
+    time eqs := VeroReduction(pp, Sigma, M);
+
+    print "Time taken to compute the Lie algebra of the obfuscated surface:";
+    time _, rep_surface := ComputeLieAlgebra(
+        eqs:
+        optimise := optimise_lie_computation,
+        n := 2,
+        d := d);
+
+    printf "Time taken to recompute the Lie algebra of the Veronese "; 
+    printf "surface of degree %o:\n", d;
+    time rep_vero := VeroneseRepresentation(k, 2, d);
+
+    printf "Time taken to recover a projective equivalence to the";
+    printf " Veronese surface:\n";
+    time sol := VeroneseRepresentationsEquivalence(rep_surface , rep_vero, 2, d);
+    T := Cputime(T);
+
+    if CheckEquivalenceToVeronese(eqs, sol, 2, d) then
+        print "An equivalence was found.";
+    else
+        print "The program gave an incorrect output.";
+    end if;
+
+    printf "The total time needed for solving the problem was %o.\n", T;
+end procedure;
+
+/*
     Generates two twists of a Veronese variety, and compute a projective equivalence between these varieties.
     Inputs:
         - q : The size of the base field.
@@ -16,7 +100,7 @@ load "testing_helpers.m";
         - optimise_lie_computation : Flag to toggle optimisation for the Lie 
             algebra computation.
 */
-RoutineTest := procedure(q, n, d : optimise_lie_computation := false)
+RoutineTest := procedure(q, n, d : optimise_lie_computation := true)
     print "Time taken to generate equations:";
     time eqs_1 := GetTwistedVeronese(q, n, d);
     time eqs_2 := GetTwistedVeronese(q, n, d);
@@ -68,36 +152,3 @@ RoutineTestNoLie := procedure(q, n, d)
     time T := VeroneseRepresentationsEquivalence(rep1, rep2, n, d);
 end procedure;
 
-/*
-    Generates public data for the scheme Vero3, and then performs the
-    reduction to computing the projective equivalence of a Veronese threefold
-    to one of its twists, and the solves the problem.
-    Inputs:
-        - q : The size of the base field.
-        - d : The degree of the Veronese embedding used for Vero3.
-*/
-CryptanalysisVero3 := procedure(q, d)
-    k := GF(q);
-    print "Time taken to generate random public data for Vero3:";
-    time Sigma, M := Vero3PublicData(k, d);
-
-    print "Time taken to compute equations for the obfuscated threefold:";
-    time eqs := Vero3Reduction(Sigma, M);
-
-    print "Time taken to compute the Lie algebra of the obfuscated threefold:";
-    time _, rep_threefold := ComputeLieAlgebra(eqs);
-
-    printf "Time taken to recompute the Lie algebra of the Veronese "; 
-    printf "threefold of degree %o:\n", d;
-    time rep_vero := VeroneseRepresentation(k, 3, d);
-
-    printf "Time taken to recover a projective equivalence to the";
-    printf " Veronese threefold:\n";
-    time T := VeroneseRepresentationsEquivalence(rep_threefold, rep_vero, 3, d);
-
-    if CheckEquivalenceToVeronese(eqs, T, 3, d) then
-        print "An equivalence was found.";
-    else
-        print "The program gave an incorrect output.";
-    end if;
-end procedure;

@@ -21,7 +21,7 @@ forward ComputeLieAlgebraBasisHomogeneous;
     - n : The dimension of the variety. Only required if optimise is true.
     - d : The degree of the Veronese variety. Only required if optimise is true.
 */
-ComputeLieAlgebra := function(eqs : optimise := false, n := 0, d := 0)
+ComputeLieAlgebra := function(eqs : optimise := true, n := 0, d := 0)
   R := Parent(eqs[1]);
   k := BaseRing(R);
   N := Rank(R);
@@ -37,9 +37,9 @@ ComputeLieAlgebra := function(eqs : optimise := false, n := 0, d := 0)
       try
         f := lie_computation_proportions[<n, d>];
       catch e
-        error Sprintf("Optimisation data not computed for n = %0, d = %0",
-                      n,
-                      d);
+        printf "Optimisation data not computed for n = %o, d = %o.\n", n, d;
+        print "Running the unoptimised computation.";
+        f := 1;
       end try;
     else
       f := 1;
