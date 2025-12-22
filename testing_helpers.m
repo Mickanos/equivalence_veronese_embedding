@@ -154,10 +154,8 @@ PrecomputeVeroneseEquations := procedure(n, d)
   R := Universe(eqs);
   N := Rank(R);
   AssignNames(~R, [Sprintf("R.%o", i): i in [1..N]]);
-  s := Sprintf("veronese_%o_%o := function()\n", n, d) cat
-      Sprintf("  R := PolynomialRing(IntegerRing(), %o);\n", N) cat
-      Sprintf("  return %o;\n", eqs) cat
-      "end function;\n";
+  s := Sprintf("veronese_%o_%o := function()\n  R := PolynomialRing(\
+IntegerRing(), %o);\n  return %o;\nend function;\n", n, d, N, eqs);
   PrintFile(filename, s);
 end procedure;
 

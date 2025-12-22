@@ -29,16 +29,17 @@ ComputeLieAlgebra := function(eqs : optimise := true, n := 0, d := 0)
 
   if IsZero(k!2) then
     basis := ComputeLieAlgebraBasisHomogeneous(eqs);
-    error if optimise, "Optimisation of the computation of lie algebra not" cat
-      "implemented in characteristic 2.";
+    if optimise then
+      print "Optimisation of the computation of lie algebra not implemented in \
+characteristic 2.";
   else
     eqs := [SymmetricMatrix(e): e in eqs];
     if optimise then
       try
         f := lie_computation_proportions[<n, d>];
       catch e
-        printf "Optimisation data not computed for n = %o, d = %o.\n", n, d;
-        print "Running the unoptimised computation.";
+        printf "Optimisation data not computed for n = %o, d = %o.\nRunning the\
+ unoptimised computation.", n, d;
         f := 1;
       end try;
     else

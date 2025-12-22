@@ -31,12 +31,12 @@ CryptanalysisVero3 := procedure(q, d: optimise_lie_computation := true)
         n := 3,
         d := d);
 
-    printf "Time taken to recompute the Lie algebra of the Veronese "; 
-    printf "threefold of degree %o:\n", d;
+    printf "Time taken to recompute the Lie algebra of the Veronese threefold \
+of degree %o:\n", d;
     time rep_vero := VeroneseRepresentation(k, 3, d);
 
-    printf "Time taken to recover a projective equivalence to the";
-    printf " Veronese threefold:\n";
+    print "Time taken to recover a projective equivalence to the Veronese \
+threefold:";
     time sol := VeroneseRepresentationsEquivalence(rep_threefold, rep_vero, 3, d);
     T := Cputime(T);
 
@@ -73,12 +73,12 @@ CryptanalysisVero2 := procedure(q, d: optimise_lie_computation := true)
         n := 2,
         d := d);
 
-    printf "Time taken to recompute the Lie algebra of the Veronese "; 
-    printf "surface of degree %o:\n", d;
+    printf "Time taken to recompute the Lie algebra of the Veronese surface of \
+degree %o:\n", d;
     time rep_vero := VeroneseRepresentation(k, 2, d);
 
-    printf "Time taken to recover a projective equivalence to the";
-    printf " Veronese surface:\n";
+    print "Time taken to recover a projective equivalence to the Veronese \
+surface:\n";
     time sol := VeroneseRepresentationsEquivalence(rep_surface , rep_vero, 2, d);
     T := Cputime(T);
 
