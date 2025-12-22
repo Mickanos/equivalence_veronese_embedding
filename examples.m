@@ -4,7 +4,7 @@ p := NextPrime(2^128);
 
 printf "For all tests below, the base field is a prime field of size %o, \
 a 128-bits prime number.\nWe begin with computing public parameters for \
-the scheme Vero2, recovering the obfuscated Veronese variety and then \ computing a projective equivalence to the standard Veronese variety.", p;
+the scheme Vero2, recovering the obfuscated Veronese variety and then \ computing a projective equivalence to the standard Veronese variety.\n\n", p;
 
 print "Parameter: d = 3";
 CryptanalysisVero2(p, 3);

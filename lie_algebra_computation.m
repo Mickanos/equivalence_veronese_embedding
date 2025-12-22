@@ -32,6 +32,7 @@ ComputeLieAlgebra := function(eqs : optimise := true, n := 0, d := 0)
     if optimise then
       print "Optimisation of the computation of lie algebra not implemented in \
 characteristic 2.";
+    end if;
   else
     eqs := [SymmetricMatrix(e): e in eqs];
     if optimise then

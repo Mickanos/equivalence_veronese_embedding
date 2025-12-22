@@ -78,7 +78,7 @@ degree %o:\n", d;
     time rep_vero := VeroneseRepresentation(k, 2, d);
 
     print "Time taken to recover a projective equivalence to the Veronese \
-surface:\n";
+surface:";
     time sol := VeroneseRepresentationsEquivalence(rep_surface , rep_vero, 2, d);
     T := Cputime(T);
 

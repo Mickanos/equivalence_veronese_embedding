@@ -148,8 +148,8 @@ end function;
     - n: The dimension of the desired variety.
     - d: The degree of the variety.
 */
-PrecomputeVeroneseEquations := procedure(n, d)
-  filename := "precomuted_data.m";
+PrecomputeVeroneseEquations := function(n, d)
+  filename := "precomputed_data.m";
   eqs := VeroneseEquations(n, d);
   R := Universe(eqs);
   N := Rank(R);
@@ -157,7 +157,8 @@ PrecomputeVeroneseEquations := procedure(n, d)
   s := Sprintf("veronese_%o_%o := function()\n  R := PolynomialRing(\
 IntegerRing(), %o);\n  return %o;\nend function;\n", n, d, N, eqs);
   PrintFile(filename, s);
-end procedure;
+  return eqs;
+end function;
 
 /*
   Outputs equations for the Veronese k-variety of dimension n - 1 and degree d,
@@ -168,7 +169,14 @@ end procedure;
     - d: The degree of the variety.
 */
 GetVeroneseEquations := function(k, n, d)
-  eqs := eval Sprintf("return veronese_%o_%o();", n, d);
+  try
+    eqs := eval Sprintf("return veronese_%o_%o();", n, d);
+  catch e
+    printf "The equations of the %o-dimensional Veronese variety of degree %o\ 
+were not computed yet. Computing them and adding them to the precomputed data.\ 
+This may increase the computation time.\n", n, d;
+    eqs := PrecomputeVeroneseEquations(n, d);
+  end try;
   r := Rank(Parent(eqs[1]));
   ChangeUniverse(~eqs, PolynomialRing(k, r));
   return eqs;
