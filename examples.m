@@ -27,8 +27,8 @@ print "Parameters: r = 3, d = 4";
 CryptanalysisVero3(p, 4);
 print "========================";
 
-print "In order to check computations with higher parameters, we circumvent\
-the bottleneck of our algorithm, which is to compute the Lie algebra\
+print "In order to check computations with higher parameters, we circumvent \
+the bottleneck of our algorithm, which is to compute the Lie algebra \
 of a variety.\nWe compute representation isomorphism to the Lie algebra \
 representation of Veronese surfaces.";
 
