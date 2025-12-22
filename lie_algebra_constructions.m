@@ -38,7 +38,8 @@ ConstructNotGln := function(k, n)
 end function;
 
 /*
-  Computes the Lie algebra representation attached to the Veronese variety of dimension n and degree d.
+  Computes the Lie algebra representation attached to the Veronese variety of
+  dimension n and degree d.
   Inputs:
     - k : The base field.
     - n : The dimension of the Veronese variety.
@@ -70,7 +71,8 @@ VeroneseRepresentation := function(k, n, d)
       return Inverse(conv) * corrected_map;
     end if;
     e, _, proj_ext, inj_gln := ConstructNotGln(k, n);
-    return map <e -> glN | a :-> (a @ proj_ext @ inj_gln @ derivative_map) + a[1] * One(glN)>;
+    return map <e -> glN |
+      a :-> (a @ proj_ext @ inj_gln @ derivative_map) + a[1] * One(glN)>;
 end function;
 
 /*
@@ -90,7 +92,9 @@ end function;
     Exactly the outputs of ConstructNotGln.
 */
 GraphAutomorphismNotGln := function(e, inj_ext, proj_ext, lift_gln, proj_gln)
-  return map<e -> e | a :-> (-Transpose(a @ proj_ext @ lift_gln)) @ proj_gln @ inj_ext - (a - a @ proj_ext @ inj_ext)>;
+  return map<e -> e |
+    a :-> (-Transpose(a @ proj_ext @ lift_gln)) @ proj_gln @ inj_ext -
+      (a - a @ proj_ext @ inj_ext)>;
 end function;
 
 /*
@@ -148,6 +152,7 @@ ConstructGlnQuotient := function(k, n)
   gln_struc, conv := LieAlgebra(gln);
   g, proj, partial_lift := QuotientWithPullback(gln_struc, Center(gln_struc));
   proj := conv * proj;
-    lift := map<g -> Mn | a :-> Matrix(b @@ conv) where b, _ is a @ partial_lift>;
+    lift := map<g -> Mn |
+      a :-> Matrix(b @@ conv) where b, _ is a @ partial_lift>;
   return g, proj, lift;
 end function;

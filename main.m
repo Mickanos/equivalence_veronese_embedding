@@ -37,7 +37,10 @@ of degree %o:\n", d;
 
     print "Time taken to recover a projective equivalence to the Veronese \
 threefold:";
-    time sol := VeroneseRepresentationsEquivalence(rep_threefold, rep_vero, 3, d);
+    time sol := VeroneseRepresentationsEquivalence(rep_threefold,
+                                                   rep_vero,
+                                                   3,
+                                                   d);
     T := Cputime(T);
 
     if CheckEquivalenceToVeronese(eqs, sol, 3, d) then
@@ -79,7 +82,7 @@ degree %o:\n", d;
 
     print "Time taken to recover a projective equivalence to the Veronese \
 surface:";
-    time sol := VeroneseRepresentationsEquivalence(rep_surface , rep_vero, 2, d);
+    time sol := VeroneseRepresentationsEquivalence(rep_surface, rep_vero, 2, d);
     T := Cputime(T);
 
     if CheckEquivalenceToVeronese(eqs, sol, 2, d) then
@@ -92,7 +95,8 @@ surface:";
 end procedure;
 
 /*
-    Generates two twists of a Veronese variety, and compute a projective equivalence between these varieties.
+    Generates two twists of a Veronese variety, and compute a projective
+    equivalence between these varieties.
     Inputs:
         - q : The size of the base field.
         - n : The dimension of the Veronese varieties.

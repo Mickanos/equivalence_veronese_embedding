@@ -145,7 +145,8 @@ ComputeLieAlgebraBasisHomogeneous := function(pols)
   M := [];
   for b in basis do
     for f in pols do
-      M cat:= Eltseq(Quo(PolyToVector(&+[&+[b[i][j]*R.j*Derivative(f, i) : j in [1..n]] : i in [1..n]], mons)));
+      M cat:= Eltseq(Quo(PolyToVector(&+[&+[b[i][j]*R.j*Derivative(f, i) :
+        j in [1..n]] : i in [1..n]], mons)));
     end for;
   end for;
   M := Matrix(n^2, #pols*r, M);

@@ -29,7 +29,8 @@ IsomorphismToGln := function(L)
 	end if;
 	M := Matrix([Vector(b @ phi @ psi): b in Basis(L)]);
 	iM := M^-1;
-	return map<L -> gln | x :-> gln!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
+	return map<L -> gln |
+		x :-> gln!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
 end function;
 
 /*
@@ -90,17 +91,22 @@ Char2SpaceBreak := function(L, spaces, roots, i)
 	pivot_space := spaces[j];
 	target_space := spaces[k];
 	ba := Basis(space);
-	mats := [Matrix([Coordinates(target_space, Vector(a*L!v)) : v in Basis(pivot_space)]): a in ba];
+	mats := [
+		Matrix([
+			Coordinates(target_space, Vector(a*L!v))
+		: v in Basis(pivot_space)])
+	: a in ba];
 	a := mats[1];
 	b := mats[2];
 
-	//Equation for the cancellation of the determinant of a combination of the two matrices
 	mid := a[1,1]*b[2,2] + a[2,2]*b[1,1] - a[1,2]*b[2,1] - a[2,1]*b[1,2];
 	da := Determinant(a);
 	db := Determinant(b);
 	R := PolynomialRing(F);
 	if IsZero(da) then
-		return [L!ba[1], IsZero(db) select L!ba[2] else L!(ba[1]) - mid/db * ba[2]];
+		return [L!ba[1], IsZero(db)
+			select L!ba[2]
+			else L!(ba[1]) - mid/db * ba[2]];
 	end if;
 	zeros := [t[1] : t in Roots(R![db, mid, da])];
 	assert #zeros eq 2;
@@ -221,21 +227,27 @@ GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
 		for i in [2..n-1] do
 			for j in [2..i] do
 				ell := Index(roots, indexed_roots[<j,i+1>]);
-				res[<j,i+1>] := [e : e in eigenbasis[ell] | not IsZero(res[<1,j>] * e)][1];
-				res[<i+1,j>] := [e : e in eigenbasis[ell] | e ne res[<j,i+1>]][1];
+				res[<j,i+1>] := [e
+					: e in eigenbasis[ell] | not IsZero(res[<1,j>] * e)][1];
+				res[<i+1,j>] := [e
+					: e in eigenbasis[ell] | e ne res[<j,i+1>]][1];
 			end for;
 			ell := Index(roots, indexed_roots[<1,i+1>]);
-			res[<i+1,1>] := [e : e in eigenbasis[ell] | not IsZero(res[<2,i+1>] * e)][1];
-			res[<1,i+1>] := [e : e in eigenbasis[ell] | e ne res[<i+1,1>]][1];
+			res[<i+1,1>] := [e
+				: e in eigenbasis[ell] | not IsZero(res[<2,i+1>] * e)][1];
+			res[<1,i+1>] := [e
+				: e in eigenbasis[ell] | e ne res[<i+1,1>]][1];
 		end for;
 	end if;
 
 	//Now, to find e_1_1.
 
 	total_space := Module(L);
-	bad_space := sub<total_space | [Vector(res[<i,i+1>] * res[<i+1, i>]): i in [1..n-1]]>;
+	bad_space := sub<total_space |
+		[Vector(res[<i,i+1>] * res[<i+1, i>]): i in [1..n-1]]>;
 	system := Transpose(Matrix([indexed_roots[<i,i+1>]: i in [1..n-1]]));
-	sol, nullspace := Solution(system, Vector([One(k)] cat [Zero(k) : _ in [1..n-2]]));
+	sol, nullspace := Solution(system,
+							   Vector([One(k)] cat [Zero(k) : _ in [1..n-2]]));
 	sol := L!(H!Eltseq(sol));
 	if not total_space!sol in bad_space then
 		res[<1,1>] := sol;
@@ -254,7 +266,9 @@ GetNormalisedBasis := function(roots, indexed_roots, eigenbasis, H)
 		quotient, proj := quo<total_space | [Vector(res[<1,k>] * res[<k,1>])]>;
 		mat_2 := Matrix([Eltseq((total_space!(L!h)) @ proj) : h in Basis(H)]);
 		N := (n-1)*(n-2);
-		target := Vector([1] cat [0 : _ in [1..N]] cat Eltseq((total_space!res[<1,1>]) @ proj));
+		target := Vector([1] cat
+						 [0 : _ in [1..N]] cat
+						 Eltseq((total_space!res[<1,1>]) @ proj));
 		sol := Solution(HorizontalJoin(mat_1, mat_2), target);
 		res[<k, k>] := L!H!(Eltseq(sol));
 	end for;
@@ -356,7 +370,8 @@ AdjustStructureConstants := function(iso)
 	matrices := [ChangeRing(b @ iso, R) : b in Basis(L)];
 	char_polys := [CharacteristicPolynomial(M): M in matrices];
 	t := Parent(char_polys[1]).1;
-	evals := [Evaluate(P, t - lambda * Trace(matrices[i])): i -> P in char_polys];
+	evals := [Evaluate(P, t - lambda * Trace(matrices[i])):
+		i -> P in char_polys];
 	coefficients := &cat[Coefficients(e): e in evals];
 	polys_k := &cat[SeqSet | Polyseq(P, k)[2..d] : P in coefficients];
 	X := Spec(quo<Rk | polys_k>);
@@ -377,7 +392,8 @@ end function;
 */
 DescendAssociativeAlgebra := function(A, k)
 	d := Dimension(A);
-	Q := [[ChangeUniverse(Eltseq(BasisProduct(A, i, j)), k): j in [1..d]]: i in [1..d]];
+	Q := [[ChangeUniverse(Eltseq(BasisProduct(A, i, j)), k): j in [1..d]]:
+		i in [1..d]];
 	return AssociativeAlgebra<k, d | Q : Check := false>;
 end function;
 
@@ -400,7 +416,8 @@ EnvelopingAlgebra := function(L)
   if K eq BaseRing(L) then
   	M := Matrix([Eltseq(b @ iso): b in Basis(L)]);
 	iM := M^-1;
-	iso := map< L -> Ma | x :-> Ma!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
+	iso := map< L -> Ma |
+		x :-> Ma!Eltseq(Vector(x) * M), y :-> L!Eltseq(Vector(y) * iM)>;
   	return true, iso;
   end if;
   iso := map<L -> Ma | b :-> Ma!Eltseq(b @ iso)>;
